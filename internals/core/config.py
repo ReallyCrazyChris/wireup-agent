@@ -1,0 +1,5 @@
+publickey  = "security to be implemented"
+privatekey = "security to be implemented"
+nodekey    = "vandiervcqhgwmg"
+ssid = "SummerTime"
+passwd = "Calmhat436"
