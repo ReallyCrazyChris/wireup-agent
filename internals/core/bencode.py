@@ -3,7 +3,7 @@ class BTFailure(Exception):
 
 def decode_int(x, f):
     f += 1
-    newf = x.index(ord("e"), f)
+    newf = x.index(bytes("e","utf-8"), f)
     n = int(x[f:newf])
 
     if x[f] == ord("-"):
@@ -17,14 +17,13 @@ def decode_int(x, f):
 
 def decode_bool(x, f):
     f += 1
-    newf = x.index(ord("e"), f)
+    newf = x.index(bytes("e","utf-8"), f)
     n = int(x[f:newf])
 
     if n == 1: 
         n = True
     else:
         n = False
-
 
     if x[f] == ord("-"):
         if x[f + 1] == ord("0"):

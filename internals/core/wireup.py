@@ -331,7 +331,7 @@ class Store():
 # @param tonodeid string identifier of the recipient node
 def queuetx(command,data,tonodeid):
 
-  #if (to == nodekey):  #  its me. dont queue just react
+  #if (tonodeid == nodekey):  #  its me. dont queue just react
   #  return react( command,data,to,nodekey,store )
 
   if ((tonodeid in txqueue) == False):
@@ -352,7 +352,10 @@ def react( command,data,to,fro,store ):
   #update model action
   if command=='udm':
     nodeid,modelid,prop,value = tuple(data)
-    return store.updatemodel( nodeid,modelid,prop,value )
+    if store.nodeid == nodeid: # is this for me
+      return store.updatemodel( nodeid,modelid,prop,value )
+    # nope ist for something else  
+    return queuetx('udm',[nodeid,modelid,prop,value],nodeid)
 
   #wire action
   if command=='w':
@@ -467,9 +470,6 @@ def react( command,data,to,fro,store ):
     return routeresponse ( source,target,hops,fro )
 """
 
-
-
-
 # announce the product on the network
 ## @param tonodeid string oprional - nodeid of a specific other WireUP afent
 ## s table - reference to the store
@@ -519,13 +519,10 @@ def unwire( producer,consumer  ):
   nodeid,_,_ = tuple(consumer.split('/'))
   queuetx('uw',[producer,consumer],nodeid)
 
-  ## set a property value of a remote or local model
+## set a property value of a remote or local model
 # @param to uri of a remote model
 # @param prop string name of a property
 # @param value any property value to set
 def update( to,prop,value ):
   nodeid,modelid = tuple(to.split('/'))
   queuetx('udm',[nodeid,modelid,prop,value],nodeid)
-
-
-

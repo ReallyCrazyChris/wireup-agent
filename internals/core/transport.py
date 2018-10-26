@@ -49,6 +49,8 @@ def listen(txqueue, react, store):
             msg = bencode(['update',store.toDict()])
             connection.sendMessage(msg)
 
+    store.on('adddescription',lambda shadow,shadows: updateAllClients())        
+
     store.on('addshadow',lambda shadow,shadows: updateAllClients())
 
     store.on('removeshadow',lambda shadow,shadows: updateAllClients())
