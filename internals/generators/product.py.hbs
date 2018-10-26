@@ -14,8 +14,7 @@ class Product(Model):
       'description' :{'index':3, 'type':'string', 'display':'text',   'group':'info', 'label':'Description'}, 
       {{#each meta}}
       '{{typename name}}':{'index':{{indexadjust @index}}, 'type':'{{typename type}}', 'display':'{{display}}', 'group':'{{group}}', 'label':'{{label}}'{{#if units}}, 'units':'{{units}}'{{/if}} },
-      {{/each}}
-    
+      {{/each}} 
     }
 
     self.props = {
@@ -30,9 +29,10 @@ class Product(Model):
 
   def start(self,store):
     print('starting product {{company}} {{name}}')
+    # uncomment to register the needed event handlers
     {{#each meta}}
     # {{typename name}} change event handler
-    self.on('{{typename name}}',lambda value: print('{{typename name}} set to ',value))
+    self.on('{{typename name}}',self.handler)
     {{/each}}  
 
   def stop(self,store):
@@ -40,6 +40,12 @@ class Product(Model):
     {{#each meta}}
     store.updatemodel(self.nodeid, self.id, '{{typename name}}', {{{stringAssist value}}})
     {{/each}}
+
+  def handler(self, store, prop, value):
+    print(prop, ' set to value ', value)
+    # uncomment to register the needed event handlers 
+    # store.updatemodel(self.nodeid, self.id, prop, value)    
+    # store.updatemodel(self.nodeid, self.id, 'description', 'a new description')    
         
   def toDescription(self):
     return [self.type,self.props['imageurl'],self.props['company'],self.props['name'],self.props['description']]

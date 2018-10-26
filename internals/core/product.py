@@ -5,7 +5,8 @@ class Product(Model):
   def __init__(self):
     super(Product, self).__init__()
     
-    self.type = 'Product'
+    self.clazz='Product'
+    self.type = 'producttype'
 
     self.meta = {
       'imageurl'    :{'index':0, 'type':'url',    'display':'image',  'group':'info', 'label':'Image'},  
@@ -32,6 +33,13 @@ class Product(Model):
       'size':1,
       'route':1
     }
-    
+
+  def start(self,store):
+    print('starting product WireUP WireUP Thing')
+
+  def stop(self,store):
+    print('stopping product WireUP WireUP Thing')
+    store.updatemodel(self.nodeid, self.id, 'power', False)
+
   def toDescription(self):
-    return [self.type,self.props['imageurl'],self.props['company'],self.props['name'],self.props['description']]
+    return [self.clazz,self.type,self.props['imageurl'],self.props['company'],self.props['name'],self.props['description']]

@@ -2,24 +2,20 @@
   "name": "wireup",
   "version": "1.0.0",
   "description": "python based agent for the wireup edge computing environment",
-  "main": "start.js",
+  "main": "main",
   "directories": {
     "test": "test"
   },
   "author": "Chris Bentley <chris.bentley@wireup.io> (http://wireup.io/)",
-  "config" : { "comport" : "COM14", "baud": 115200 },
+  "config": {
+    "comport": "COM14",
+    "baud": 115200
+  },
   "scripts": {
     "dev": "python ./internals/core/main.py",
+    "do": "node ./node_modules/plop/src/plop.js",
     "setproxy": "npm config set proxy http://194.145.60.1:9400 && npm config set https-proxy http://194.145.60.1:9400",
-    "deleteproxy": "npm config delete proxy && npm config delete https-proxy ",
-    "setup": " node ./internals/scripts/setup.js",
-    "flash": " node ./internals/scripts/flash.js",
-    "generate": "node ./node_modules/plop/src/plop.js",
-    "upload": "node ./internals/scripts/upload.js",
-    "ls": "ampy -p COM14 -b 115200 ls",
-    "put": "ampy -p COM14 -b 115200 put",
-    "erase": "ampy -p COM14 -b 115200 rmdir .",
-    "term": "serialport-term -b 115200"
+    "deleteproxy": "npm config delete proxy && npm config delete https-proxy "
   },
   "keywords": [
     "Internet",
@@ -35,7 +31,7 @@
     "cross-env": "^5.2.0",
     "inquirer-recursive": "0.0.5",
     "plop": "^2.1.0",
-    "serialport": "^6.2.2",
+    "serialport": "^7.0.2",
     "shelljs": "^0.8.2"
   }
 }

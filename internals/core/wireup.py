@@ -1,5 +1,7 @@
+import importlib
 from config import nodekey
 from typecoersion import coerce
+from bricks.install import bricks
 
 txqueue = {}
 
@@ -55,14 +57,15 @@ class Store():
   def removemodel(self,modelid):
   
     if (modelid in self.models) == False: return # model does'nt exists  
-
-    model =   self.models[modelid]
-
+    model = self.models[modelid]
     model.stop(self)
 
     for shadowlistenerid in self.shadowlisteners: # propagate to shadow listeners
       queuetx('srm',[model.nodeid,model.id],shadowlistenerid)
 
+    model = None
+    # TODO garbage collection
+ 
  ## updatemodel update model
   # @param modelid integer
   # @param prop string
@@ -82,7 +85,7 @@ class Store():
 
     model.props[prop] = coercedvalue # assigns the new value
 
-    model.emit(prop,model.props[prop],model) # emit a property value change event
+    model.emit(prop, self, prop, model.props[prop]) # emit a property value change event
 
     # propagate to shadow models
     for shadownodeid in self.shadowlisteners:
@@ -188,7 +191,8 @@ class Store():
       'models':models,
       'shadowlisteners':self.shadowlisteners,
       'discovered':self.discovered,
-      'shadows':self.shadows
+      'shadows':self.shadows,
+      'bricks': bricks() # dictionary of installed bricks
     }
 
     
@@ -293,7 +297,7 @@ class Store():
   def shadowaddmodel( self,model ):
 
     nodeid = model['nodeid']
-    modelid = model['modelid']
+    modelid = model['id']
 
     if (nodeid in self.shadows)==False: return # no such shadow
 
@@ -301,7 +305,7 @@ class Store():
 
     shadow[modelid] = model #assign the shadowmodel
 
-    self.emit('shadowaddmodel',model)
+    self.emit('shadowaddmodel',shadow,model)
 
 
   ## shadow remove model, updates shadow state from orign model state
@@ -338,7 +342,8 @@ def queuetx(command,data,tonodeid):
     txqueue[tonodeid].insert(0,command)   #push on the command and data
 
 ##react to an incoming command
-# @param command string
+# @param command stringcls
+
 # @param data list
 # @param to string node identifier of the recipient (this node) 
 # @param fro string node identifier of the sender (another node) 
@@ -384,7 +389,8 @@ def react( command,data,to,fro,store ):
   #add brick action
   if command=='ab':
     brickname, = tuple( data )
-    return store.addmodel( {'meta':{'type':brickname}} )
+    brickinstance = importlib.import_module('bricks.'+str( brickname ) ).Brick()
+    store.addmodel( brickinstance )
 
   #remove brick action
   if command=='rb':

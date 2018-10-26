@@ -2,7 +2,8 @@ class Model():
 
   #Constructor
   def __init__(self):
-    self.type = 'Model'
+    self.clazz='Model'  
+    self.type = 'model'
     self.id = False
     self.nodeid = False
     self.eventlisteners = {}
@@ -38,6 +39,7 @@ class Model():
 
   def toDict(self):
     return {
+      'clazz': self.clazz,
       'type' : self.type, 
       'id' : self.id, 
       'nodeid' : self.nodeid, 

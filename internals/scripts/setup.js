@@ -1,4 +1,5 @@
 
 const shell = require('shelljs');
 
-// shell.exec('npm install -g serialport')
+shell.exec('python -m pip install --upgrade pip')
+shell.exec('pip install pdoc')      // Python API Documentation Generator

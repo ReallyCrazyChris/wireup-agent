@@ -81,7 +81,7 @@ class Store():
 
     model.props[prop] = coercedvalue # assigns the new value
 
-    model.emit(prop,model.props[prop],model) # emit a property value change event
+    model.emit(prop, self, prop, model.props[prop]) # emit a property value change event  
 
     # propagate to shadow models
     for shadownodeid in self.shadowlisteners:
