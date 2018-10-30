@@ -7,28 +7,28 @@ import time
 from config import ssid, passwd
 from bencode import bencode, bdecode
 
-port = 3300 #both udp and mulicast listen port
-multiaddr = '225.0.0.37' ## multicast addres
+_port = 3300 #both udp and mulicast listen port
+_multiaddr = '225.0.0.37' ## multicast addres
 
 # initiate a station
-sta = network.WLAN(network.STA_IF)
+_sta = network.WLAN(network.STA_IF)
 
-if not sta.isconnected():
+if not _sta.isconnected():
     print('connecting to network...', ssid)
-    sta.active(True)
+    _sta.active(True)
     # sta.connect('SummerTime', 'Calmhat436')
-    sta.connect(ssid, passwd)
+    _sta.connect(ssid, passwd)
 
-    while not sta.isconnected():
+    while not _sta.isconnected():
         pass
 
 
-ip = sta.ifconfig()[0]
-print('connected as:', ip)
+_ip = _sta.ifconfig()[0]
+print('connected as:', _ip)
 
 # close down the access point
-ap = network.WLAN(network.AP_IF)
-ap.active(False)
+_ap = network.WLAN(network.AP_IF)
+_ap.active(False)
 
 rt = {} # routing table
 # Create a IPv4/UDP socket
@@ -43,9 +43,9 @@ def aton(ipv4address):
 def listen(txqueue, react, store):
     # bind to the network adapter 
     s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-    s.bind(('0.0.0.0',port))
+    s.bind(('0.0.0.0',_port))
     # register as a multicast listener
-    mreq=aton(multiaddr) + aton(ip)
+    mreq=aton(_multiaddr) + aton(_ip)
     s.setsockopt(socket.IPPROTO_IP, socket.IP_ADD_MEMBERSHIP, mreq)
     s.setblocking(False)
     time.sleep(1)           # sleep for 1 second
@@ -91,7 +91,7 @@ def sendudp( txqueue ):
             print('sending ',msg)
 
             if toid == "all" : #  multicast
-                s.sendto(msg, (multiaddr,port))
+                s.sendto(msg, (_multiaddr,_port))
             
             elif (toid in rt)==True : #  unicast 
                 s.sendto(msg, rt[toid]) # TODO Error Handliong

@@ -29,6 +29,7 @@ class Store():
       for callback in self.ev[name]:
         callback(*args)
 
+
   #addmodel - adds a Model instance to the store
   # @param self refence to store
   # @param model subclass object of Model
@@ -54,14 +55,15 @@ class Store():
   def removemodel(self,modelid):
   
     if (modelid in self.models) == False: return # model does'nt exists  
-
-    model =   self.models[modelid]
-
+    model = self.models[modelid]
     model.stop(self)
 
     for shadowlistenerid in self.shadowlisteners: # propagate to shadow listeners
       queuetx('srm',[model.nodeid,model.id],shadowlistenerid)
 
+    model = None
+    # TODO garbage collection
+ 
   ## updatemodel update model
   # @param modelid integer
   # @param prop string
@@ -187,7 +189,8 @@ class Store():
       'models':models,
       'shadowlisteners':self.shadowlisteners,
       'discovered':self.discovered,
-      'shadows':self.shadows
+      'shadows':self.shadows,
+      'bricks': bricks() # dictionary of installed bricks
     }
 
     
@@ -203,7 +206,7 @@ class Store():
 # @param tonodeid string identifier of the recipient node
 def queuetx(command,data,tonodeid):
 
-  #if (to == nodekey):  #  its me. dont queue just react
+  #if (tonodeid == nodekey):  #  its me. dont queue just react
   #  return react( command,data,to,nodekey,store )
 
   if ((tonodeid in txqueue) == False):
@@ -215,6 +218,7 @@ def queuetx(command,data,tonodeid):
 
 ##react to an incoming command
 # @param command string
+
 # @param data list
 # @param to string node identifier of the recipient (this node) 
 # @param fro string node identifier of the sender (another node) 
@@ -223,7 +227,10 @@ def react( command,data,to,fro,store ):
   #update model action
   if command=='udm':
     nodeid,modelid,prop,value = tuple(data)
-    return store.updatemodel( nodeid,modelid,prop,value )
+    if store.nodeid == nodeid: # is this for me
+      return store.updatemodel( nodeid,modelid,prop,value )
+    # nope ist for something else  
+    return queuetx('udm',[nodeid,modelid,prop,value],nodeid)
 
   #wire action
   if command=='w':
@@ -260,7 +267,8 @@ def react( command,data,to,fro,store ):
   #add brick action
   if command=='ab':
     brickname, = tuple( data )
-    return store.addmodel( {'meta':{'type':brickname}} )
+    brickinstance = importlib.import_module('bricks.'+str( brickname ) ).Brick()
+    store.addmodel( brickinstance )
 
   #remove brick action
   if command=='rb':
@@ -328,6 +336,3 @@ def unwire( producer,consumer  ):
 def update( to,prop,value ):
   nodeid,modelid = tuple(to.split('/'))
   queuetx('udm',[nodeid,modelid,prop,value],nodeid)
-
-
-
