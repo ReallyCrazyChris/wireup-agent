@@ -31,13 +31,13 @@ class Brick(Model):
 
   def stop(self,store):
     print('stopping product WireUP WireUP Thing')
-    store.updatemodel(self.nodeid, self.id, 'output', False)
+    self.commit('output', False)
 
   def evaluate(self, store, prop, value):
     if self.props['inputA'] or self.props['inputB']:
-      store.updatemodel(self.nodeid, self.id, 'output', True)
+        self.commit('output', True)
     else:
-      store.updatemodel(self.nodeid, self.id, 'output', False)
+        self.commit('output', False)
 
   def toDescription(self):
     return [self.clazz,self.type,self.props['imageurl'],self.props['name'],self.props['description']]

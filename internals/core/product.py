@@ -36,10 +36,10 @@ class Product(Model):
 
   def start(self,store):
     print('starting product WireUP WireUP Thing')
-
+    
   def stop(self,store):
     print('stopping product WireUP WireUP Thing')
-    store.updatemodel(self.nodeid, self.id, 'power', False)
+    self.commit('power', False)
 
   def toDescription(self):
     return [self.clazz,self.type,self.props['imageurl'],self.props['company'],self.props['name'],self.props['description']]

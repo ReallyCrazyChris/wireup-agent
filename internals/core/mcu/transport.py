@@ -1,14 +1,15 @@
 #!/usr/bin/env python
 # encoding: utf-8
 import network
-import socket
 import ustruct
 import time
-from config import ssid, passwd
+import socket
+from config import ip, port, multiaddr, ssid, passwd
+from actions import queue
 from bencode import bencode, bdecode
+from reactor import react
 
-_port = 3300 #both udp and mulicast listen port
-_multiaddr = '225.0.0.37' ## multicast addres
+rt = {} # routing table
 
 # initiate a station
 _sta = network.WLAN(network.STA_IF)
@@ -30,41 +31,44 @@ print('connected as:', _ip)
 _ap = network.WLAN(network.AP_IF)
 _ap.active(False)
 
-rt = {} # routing table
-# Create a IPv4/UDP socket
-s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)    
-
 def aton(ipv4address):
   a = []
   for i in ipv4address.split('.'):
     a.append(int(str(i)))
   return ustruct.pack('BBBB', a[0],a[1],a[2],a[3])
 
-def listen(txqueue, react, store):
+def listen(store):
+
+    # Create a IPv4/UDP socket
+    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)    
     # bind to the network adapter 
     s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-    s.bind(('0.0.0.0',_port))
+    s.bind(('0.0.0.0',port))
     # register as a multicast listener
-    mreq=aton(_multiaddr) + aton(_ip)
+    mreq=aton(multiaddr) + aton(_ip)
     s.setsockopt(socket.IPPROTO_IP, socket.IP_ADD_MEMBERSHIP, mreq)
     s.setblocking(False)
     time.sleep(1)           # sleep for 1 second
     while True:
-        receiveupd(react, store)
-        sendudp(txqueue)
+        receiveupd(store, s)
+        sendudp(queue, s)
 
-def receiveupd( react, store):
+def receiveupd(store, socket):
+
     try:
-        msg, address = s.recvfrom(1024) # Buffer size is 2048. Change as needed.
-    except:
+        msg, address = socket.recvfrom(1024) # Buffer size is 2048. Change as needed.
+    except: 
+        # exceptions will be continoulsy thrown due to the non-blocking
         pass
     else:
-        if msg:   
-
+        if msg:
+           
+            print('>-', msg)
             packets = bdecode(msg)
-            del msg
             
             if packets == False: return 
+
+            #print(packets)
 
             to = packets.pop()    #  pop off to value
             fro = packets.pop()  #  pop off fro value
@@ -75,30 +79,26 @@ def receiveupd( react, store):
             while len(packets) > 1: 
                 data = packets.pop()
                 command = packets.pop()
-                react(command, data, to, fro, store)
+                react(command, data, store)
 
-def sendudp( txqueue ):
+def sendudp(queue, socket):
 
-    for toid in txqueue:
+    for toid in queue:
 
-        packet = txqueue[toid]
+        packet = queue[toid]
 
         if (packet):
 
             msg = bencode(packet) 
-            
-            del packet
-            print('sending ',msg)
-
+            print('->', msg)
             if toid == "all" : #  multicast
-                s.sendto(msg, (_multiaddr,_port))
-            
+                socket.sendto(msg, (multiaddr,port))
+
             elif (toid in rt)==True : #  unicast 
-                s.sendto(msg, rt[toid]) # TODO Error Handliong
+                socket.sendto(msg, rt[toid]) # TODO Error Handliong
             
             else:
-                print('destination unknown for',toid)
-
-            del msg
+                print('destination unknown for', toid)
         
-    txqueue.clear()
+    queue.clear()
+

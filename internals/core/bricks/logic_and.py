@@ -31,13 +31,13 @@ class Brick(Model):
     self.on('inputB',self.evaluate)
 
   def stop(self,store):
-    store.updatemodel(self.nodeid, self.id, 'output', False)
+    self.commit('output', False)
 
   def evaluate(self, store, prop, value):
     if self.props['inputA'] and self.props['inputB']:
-      store.updatemodel(self.nodeid, self.id, 'output', True)
+      self.commit('output', True)
     else:
-      store.updatemodel(self.nodeid, self.id, 'output', False)
+      self.commit('output', False)
 
   def toDescription(self):
     return [self.clazz,self.type,self.props['imageurl'],self.props['name'],self.props['description']]

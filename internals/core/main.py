@@ -1,15 +1,12 @@
-from config import nodekey
-from wireup import Store, txqueue, react, announce, discover
+from store import Store
 from product import Product
+from mutations import addmodel
+from actions import announce
 from transport import listen
 
-print('initialzing product: ', nodekey)
-
 store = Store()
-
 product = Product()
-
-store.addmodel(product)
+addmodel(store, product)
 
 #store.on('adddescription',lambda description,fro: print('adddescription', description))
 #store.on('adddescription',lambda description,fro: wireup.shadow(nodekey))
@@ -23,5 +20,4 @@ store.addmodel(product)
 # announce a descritpion of the dial model on the network using multicast
 announce(product,'all')
 #discover()
-
-listen( txqueue, react, store ) 
+listen(store) 

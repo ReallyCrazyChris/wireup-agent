@@ -1,3 +1,5 @@
+from actions import update
+
 class Model():
 
   #Constructor
@@ -16,27 +18,34 @@ class Model():
   #on - adds an event callback
   # @param n string event name
   # @param c fuction event callback
-  def on(self,name,callback):
+  def on(self, name, callback):
     if ((name in self.ev) == False): self.ev[name] = []  #create a queue for the destinaiton, push form and to
     if ((name in self.ev) == True):  self.ev[name].append(callback)   #push on the command and data
 
   #emit - emits an named event with arguments
   # @param n String event name
   # @param ... Arguments passed to the event callback
-  def emit(self,name,*args):
+  def emit(self, name, *args):
     if (name in self.ev) == True:
       for callback in self.ev[name]:
         callback(*args)   
 
-  def start(self,store):
+  def commit(self, prop, value):
+    update(self.nodeid, self.id, prop, value)
+
+  ## lifecycle start method
+  def start(self, store):
     pass
     
-  def stop(self,store):
+  ## lifecycle stop method  
+  def stop(self, store):
     pass
 
   def toDescription(self):
     raise NotImplementedError #you want to override this on the child classes
 
+
+  ## TODO is this for serialization ?
   def toDict(self):
     return {
       'clazz': self.clazz,
