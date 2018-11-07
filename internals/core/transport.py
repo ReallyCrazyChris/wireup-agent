@@ -1,13 +1,13 @@
 #!/usr/bin/env python
 # encoding: utf-8
 import socket
-from config import ip, port, multiaddr
-from actions import queue
+from config import nodekey, ip, port, multiaddr
 from bencode import bencode, bdecode
+from queue import queue, send
 from reactor import react
 from SimpleWebSocketServer import SimpleWebSocketServer, WebSocket
 
-rt = {} # routing table
+rt = {} #routing table
 
 def listen(store):
 
@@ -73,12 +73,9 @@ def receiveupd(store, socket):
         pass
     else:
         if msg:
-           
             packets = bdecode(msg)
-            
-            if packets == False: return 
 
-            #print(packets)
+            if packets == False: return
 
             to = packets.pop()    #  pop off to value
             fro = packets.pop()  #  pop off fro value
@@ -86,10 +83,12 @@ def receiveupd(store, socket):
             if fro:
                 rt[fro] = (address[0],address[1])  #  update routing table
 
-            while len(packets) > 1: 
+            while len(packets) > 1: # TODO better bad packedt detection
                 data = packets.pop()
                 command = packets.pop()
                 react(command, data, store)
+
+
 
 def sendudp(queue, socket):
 
@@ -98,17 +97,18 @@ def sendudp(queue, socket):
         packet = queue[toid]
 
         if (packet):
-
-            msg = bencode(packet) 
-
-            if toid == "all" : #  multicast
+            msg = bencode(packet)
+             
+            if toid == "all": #multicast
                 socket.sendto(msg, (multiaddr,port))
 
-            elif (toid in rt)==True : #  unicast 
+            elif toid == nodekey :
+                socket.sendto(msg, (ip,port))
+
+            elif (toid in rt) == True : #  unicast 
                 socket.sendto(msg, rt[toid]) # TODO Error Handliong
-            
+
             else:
                 print('destination unknown for', toid)
         
     queue.clear()
-

@@ -1,22 +1,5 @@
 from config import nodekey
-queue = {} # transmit queue
-
-##send groups messages together by desitnation for transmission
-# @param command string
-# @param args list
-# @param tonodeid string identifier of the recipient node
-def send(command, args, tonodeid):
-
-    #if (tonodeid == nodekey):  #  its me. dont queue just react
-    #    return react( command,data,store )
-
-    if ((tonodeid in queue) == False):
-        queue[tonodeid] =  [nodekey,tonodeid]  #create a queue for the destinaiton, push form and to
-
-    if ((tonodeid in queue) == True):
-        queue[tonodeid].insert(0,args)   #push on the  args
-        queue[tonodeid].insert(0,command)   #push on the command
-
+from transport import send
 # announce the product on the network
 ## @param tonodeid string oprional - nodeid of a specific other WireUP afent
 ## s table - reference to the store

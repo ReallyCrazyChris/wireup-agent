@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # encoding: utf-8
 import network
+from config import ssid, passwd
 
 # initiate a station
 _sta = network.WLAN(network.STA_IF)

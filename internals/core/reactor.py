@@ -1,6 +1,6 @@
 import mutations
 from config import nodekey
-from actions import send
+from queue import send
 
 ##react to an incoming command
 # @param command string
@@ -18,17 +18,14 @@ def react(command, data, store):
   if command=='w':
     producer,_ = tuple(data)
     nodeid,_,_ = tuple(producer.split('/'))
-    if nodekey == nodeid:
-      return send('awl', data,nodeid)
-    send('w', data, nodeid)
+    return send('awl', data,nodeid)
+
 
   #unwire action
   if command=='uw':
     producer,_ = tuple(data)
     nodeid,_,_ = tuple(producer.split('/'))
-    if nodekey == nodeid:
-      return send('rwl', data, nodeid)
-    send('uw', data, nodeid)
+    return send('rwl', data, nodeid)
 
   #add wiew wire listener action
   if command=='awl':
