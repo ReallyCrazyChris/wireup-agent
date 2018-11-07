@@ -1,4 +1,4 @@
-from actions import update
+from queue import send
 
 class Model():
 
@@ -31,7 +31,7 @@ class Model():
         callback(*args)   
 
   def commit(self, prop, value):
-    update(self.nodeid, self.id, prop, value)
+    send('udm',[self.nodeid, self.id, prop, value],self.nodeid)
 
   ## lifecycle start method
   def start(self, store):

@@ -1,5 +1,5 @@
 from config import nodekey
-from bricks.install import bricks
+#from bricks.install import bricks
 
 class Store():
 
@@ -45,7 +45,7 @@ class Store():
       'shadowlisteners':self.shadowlisteners,
       'discovered':self.discovered,
       'shadows':self.shadows,
-      'bricks': bricks() # dictionary of installed bricks
+      #'bricks': bricks() # dictionary of installed bricks
     }
 
     

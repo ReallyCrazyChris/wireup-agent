@@ -1,6 +1,6 @@
-import importlib
+#import importlib
 from typecoersion import coerce
-from queue import send
+from actions import send
 
 #addmodel - adds a Model instance to the store
 # @param store refence to store
@@ -32,8 +32,9 @@ def removemodel(store,modelid):
     del store.models[modelid]
  
 def addbrick(store, brickname):
-    brickinstance = importlib.import_module('bricks.'+str( brickname ) ).Brick()
-    addmodel(store, brickinstance)
+    #brickinstance = importlib.import_module('bricks.'+str( brickname ) ).Brick()
+    #addmodel(store, brickinstance)
+    pass
 
 ## updatemodel update model
 # @param modelid integer

@@ -1,5 +1,6 @@
 from config import nodekey
-from transport import send
+from queue import send
+
 # announce the product on the network
 ## @param tonodeid string oprional - nodeid of a specific other WireUP afent
 ## s table - reference to the store
