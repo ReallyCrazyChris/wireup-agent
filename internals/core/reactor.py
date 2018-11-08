@@ -20,7 +20,6 @@ def react(command, data, store):
     nodeid,_,_ = tuple(producer.split('/'))
     return send('awl', data,nodeid)
 
-
   #unwire action
   if command=='uw':
     producer,_ = tuple(data)

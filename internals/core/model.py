@@ -1,4 +1,4 @@
-from queue import send
+from mutations import updatemodel
 
 class Model():
 
@@ -31,7 +31,9 @@ class Model():
         callback(*args)   
 
   def commit(self, prop, value):
-    send('udm',[self.nodeid, self.id, prop, value],self.nodeid)
+      #send('udm',[self.nodeid, self.id, prop, value],self.nodeid)
+      #updatemodel(self, prop, value)
+      pass
 
   ## lifecycle start method
   def start(self, store):
@@ -43,7 +45,6 @@ class Model():
 
   def toDescription(self):
     raise NotImplementedError #you want to override this on the child classes
-
 
   ## TODO is this for serialization ?
   def toDict(self):

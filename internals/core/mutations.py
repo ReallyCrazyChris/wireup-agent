@@ -2,6 +2,7 @@
 from typecoersion import coerce
 from actions import send
 
+
 #addmodel - adds a Model instance to the store
 # @param store refence to store
 # @param model subclass object of Model
@@ -51,7 +52,7 @@ def updatemodel( store,nodeid,modelid,prop,value ):
 
     coercedvalue = coerce(value,proptype) # coerces the value to the property type
 
-    if model.props[prop] == coercedvalue: return # no value change
+    if model.props[prop] == coercedvalue: return # no change to the value
 
     model.props[prop] = coercedvalue # assigns the new value
 

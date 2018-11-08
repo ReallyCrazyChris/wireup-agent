@@ -7,9 +7,8 @@ import time
 import socket
 from config import nodekey, ip, port, multiaddr
 from bencode import bencode, bdecode
-from queue import queue, send
 from reactor import react
-
+from queue import queue
 
 # initiate a station
 _sta = network.WLAN(network.STA_IF)

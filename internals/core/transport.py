@@ -73,19 +73,21 @@ def receiveupd(store, socket):
         pass
     else:
         if msg:
-            packets = bdecode(msg)
+            packet = bdecode(msg)
 
-            if packets == False: return
+            print('rec',packet)
 
-            to = packets.pop()    #  pop off to value
-            fro = packets.pop()  #  pop off fro value
+            if packet == False: return
+
+            to = packet.pop()    #  pop off to value
+            fro = packet.pop()  #  pop off fro value
 
             if fro:
                 rt[fro] = (address[0],address[1])  #  update routing table
 
-            while len(packets) > 1: # TODO better bad packedt detection
-                data = packets.pop()
-                command = packets.pop()
+            while len(packet) > 1: # TODO better bad packedt detection
+                data = packet.pop()
+                command = packet.pop()
                 react(command, data, store)
 
 

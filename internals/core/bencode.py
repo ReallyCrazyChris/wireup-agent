@@ -96,7 +96,7 @@ def bdecode(x):
         r, l = decode_func[x[0]](x, 0)
     except (IndexError, KeyError, ValueError):
         return False
-        raise BTFailure("not a valid bencoded string")
+        #raise BTFailure("not a valid bencoded string")
         
     if l != len(x):
         pass    
