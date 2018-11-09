@@ -31,16 +31,14 @@ class Model():
         callback(*args)   
 
   def commit(self, prop, value):
-      #send('udm',[self.nodeid, self.id, prop, value],self.nodeid)
-      #updatemodel(self, prop, value)
-      pass
+      updatemodel(self.id, prop, value)
 
   ## lifecycle start method
-  def start(self, store):
+  def start(self):
     pass
     
   ## lifecycle stop method  
-  def stop(self, store):
+  def stop(self):
     pass
 
   def toDescription(self):

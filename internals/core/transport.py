@@ -3,20 +3,23 @@
 import socket
 from config import nodekey, ip, port, multiaddr
 from bencode import bencode, bdecode
-from queue import queue, send
 from reactor import react
+from queue import queue, receive, process
+
+from store import Store
+store = Store()
+
 from SimpleWebSocketServer import SimpleWebSocketServer, WebSocket
 
 rt = {} #routing table
 
-def listen(store):
+def listen():
 
     class WssHandler(WebSocket):
 
         def handleMessage(self):
-            command, args = tuple( bdecode( self.data))
-            print(args)
-            react(command, args, store)
+            msg = bdecode( self.data )
+            receive(msg)
              
         def handleConnected(self):
             print(self.address, 'connected')
@@ -36,6 +39,7 @@ def listen(store):
     websocketserver = SimpleWebSocketServer(ip, 9090, WssHandler)
 
     def updateAllClients():
+        print('updateAllClients')
         for fileno in websocketserver.connections:
             connection = websocketserver.connections[fileno]
             msg = bencode(['update',store.toDict()])
@@ -51,20 +55,22 @@ def listen(store):
 
     store.on('shadowremovemodel',lambda nodeid,modelid: updateAllClients())
 
-    store.on('shadowaddwire',lambda shadow,shadows: updateAllClients())
+    store.on('shadowaddwire',lambda producer,consumer: updateAllClients())
 
-    store.on('shadowremovewire',lambda shadow,shadows: updateAllClients())
-
+    store.on('shadowremovewire',lambda producer,consumer: updateAllClients())
+    
     store.on('updateshadowmodel',lambda prop,value,shadowmodel: updateAllClients())
-
-    print('wireup listening...')
     
     while True:
-        receiveupd(store, s)
-        sendudp(queue, s)
+        process(react)
         websocketserver.serveonce()
+        receiveupd(s)  
+        sendudp(queue, s)
+        
+        
+
             
-def receiveupd(store, socket):
+def receiveupd(socket):
 
     try:
         msg, address = socket.recvfrom(4096) # Buffer size is 2048. Change as needed.
@@ -73,24 +79,20 @@ def receiveupd(store, socket):
         pass
     else:
         if msg:
-            packet = bdecode(msg)
+            packets = bdecode(msg)
 
-            print('rec',packet)
+            if packets == False: return
 
-            if packet == False: return
-
-            to = packet.pop()    #  pop off to value
-            fro = packet.pop()  #  pop off fro value
+            to = packets.pop()   #  pop off to value
+            fro = packets.pop()  #  pop off fro value
 
             if fro:
                 rt[fro] = (address[0],address[1])  #  update routing table
 
-            while len(packet) > 1: # TODO better bad packedt detection
-                data = packet.pop()
-                command = packet.pop()
-                react(command, data, store)
+            print('receiveupd', packets)
 
-
+            while len(packets): # TODO better bad packedt detection
+                receive(packets.pop())
 
 def sendudp(queue, socket):
 
@@ -99,6 +101,8 @@ def sendudp(queue, socket):
         packet = queue[toid]
 
         if (packet):
+
+            print('sendudp', packet)
             msg = bencode(packet)
              
             if toid == "all": #multicast

@@ -8,7 +8,10 @@ import socket
 from config import nodekey, ip, port, multiaddr
 from bencode import bencode, bdecode
 from reactor import react
-from queue import queue
+from queue import queue, receive, process
+
+from store import Store
+store = Store()
 
 # initiate a station
 _sta = network.WLAN(network.STA_IF)
@@ -36,7 +39,7 @@ def aton(ipv4address):
 
 rt = {} # routing table
 
-def listen(store):
+def listen():
 
     # Create a IPv4/UDP socket
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)    
@@ -52,7 +55,7 @@ def listen(store):
         receiveupd(store, s)
         sendudp(queue, s)
 
-def receiveupd(store, socket):
+def receiveupd(socket):
 
     try:
         msg, address = socket.recvfrom(1024) # Buffer size is 2048. Change as needed.
@@ -71,10 +74,8 @@ def receiveupd(store, socket):
             if fro:
                 rt[fro] = (address[0],address[1])  #  update routing table
 
-            while len(packets) > 1: 
-                data = packets.pop()
-                command = packets.pop()
-                react(command, data, store)
+            while len(packets): # TODO better bad packedt detection
+                receive(packets.pop())
 
 def sendudp(queue, socket):
 

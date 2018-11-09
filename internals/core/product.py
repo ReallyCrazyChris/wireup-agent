@@ -34,10 +34,11 @@ class Product(Model):
       'route':1
     }
 
-  def start(self,store):
+  def start(self):
     print('starting product WireUP WireUP Thing')
+    #self.on('reset',lambda model,name,value: print('reset event',model,name,value))
     
-  def stop(self,store):
+  def stop(self):
     print('stopping product WireUP WireUP Thing')
     self.commit('power', False)
 

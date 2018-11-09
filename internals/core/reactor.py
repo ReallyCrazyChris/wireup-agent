@@ -5,14 +5,16 @@ from queue import send
 ##react to an incoming command
 # @param command string
 # @param data list
-def react(command, data, store):
+def react(command, data):
+
+  print('react',command,data)
 
   #update model action
-  if command=='udm':
-    nodeid,modelid,prop,value = tuple(data)
-    if nodekey == nodeid:
-      return mutations.updatemodel(store, nodeid, modelid, prop, value)
-    send('udm', data, nodeid)
+  if  command=='udm':
+      nodeid,modelid,prop,value = tuple(data)
+      if nodekey == nodeid:
+        return mutations.updatemodel(modelid, prop, value)
+      send('udm', data, nodeid)
   
   #wire action
   if command=='w':
@@ -29,39 +31,43 @@ def react(command, data, store):
   #add wiew wire listener action
   if command=='awl':
     producer, consumer = tuple(data)
-    return mutations.addwirelistener(store, producer, consumer) 
+    return mutations.addwirelistener(producer, consumer) 
 
   #remove wiew wire listener action
   if command=='rwl':
     producer,consumer = tuple(data)
-    return mutations.removewirelistener(store, producer, consumer)
+    return mutations.removewirelistener(producer, consumer)
 
   #add shadow listener action
   if command=='asl':
     shadownodid, = tuple(data)
-    return mutations.addshadowlistener(store, shadownodid)
+    return mutations.addshadowlistener(shadownodid)
 
   #remove shadow listener action
   if command=='rsl':
     shadownodid, = tuple(data)
-    return mutations.removeshadowlistener(store, shadownodid)
+    return mutations.removeshadowlistener(shadownodid)
 
   #add brick action
   if command=='ab':
     bricktype, = tuple(data)
+    # TODO where is nodeid 
     if nodekey == nodeid:
-      return mutations.addbrick(store, bricktype)
+      return mutations.addbrick(bricktype)
 
   #remove brick action
   if command=='rb':
     modelid, = tuple(data)
-    return mutations.removemodel(store, modelid)
+    return mutations.removemodel(modelid)
  
+
+  # TODO store needed here :(
   #discover action
   if command=='d':
-    tonodeid, = tuple(data)
-    model = store.models['1']
-    return send('ad', [model.toDescription(), model.nodeid], tonodeid )
+    #tonodeid, = tuple(data)
+    #model = store.models['1']
+    #return send('ad', [model.toDescription(), model.nodeid], tonodeid )
+    pass
  
 
   """ from here on master node only """
@@ -69,42 +75,42 @@ def react(command, data, store):
   #add description action
   if command=='ad':
     description, nodeid = tuple(data)
-    return mutations.adddescription(store, description, nodeid)
+    return mutations.adddescription(description, nodeid)
 
   #add shadow action
   if command=='ash':
     shadownodeid, shadow = tuple(data)
-    return mutations.addshadow(store, shadownodeid,shadow)
+    return mutations.addshadow(shadownodeid,shadow)
 
   #remove shadow action
   if command=='rsh':
     shadownodeid, = tuple(data)
-    return mutations.removeshadow(store, shadownodeid)
+    return mutations.removeshadow(shadownodeid)
 
   #update shadow model action
   if command=='udsm':
     nodeid, modelid, prop, value = tuple(data)
-    return mutations.updateshadowmodel(store, nodeid, modelid, prop, value)
+    return mutations.updateshadowmodel(nodeid, modelid, prop, value)
 
   #shadow add wire listener action
   if command=='sawl':
     producer, consumer = tuple(data)
-    return mutations.shadowaddwirelistener(store, producer, consumer)
+    return mutations.shadowaddwirelistener(producer, consumer)
 
   #shadow remove wire listener action
   if command=='srwl':
     producer, consumer = tuple(data)
-    return mutations.shadowremovewirelistener(store, producer, consumer)
+    return mutations.shadowremovewirelistener(producer, consumer)
 
   #shadow add model action
   if command=='sam':
     model, = tuple(data)
-    return mutations.shadowaddmodel(store, model)
+    return mutations.shadowaddmodel(model)
 
   #shadow remove model action
   if command=='srm':
     nodeid, modelid = tuple(data)
-    return mutations.shadowremovemodel(store, nodeid, modelid)
+    return mutations.shadowremovemodel(nodeid, modelid)
 
   #shadow add action
   if command=='shadow':
@@ -115,17 +121,3 @@ def react(command, data, store):
   if command=='unshadow':
     nodeid, = tuple(data)
     return send('rsl',[nodekey],nodeid)
-
-    
-
-"""  
-  #route request action
-  if command=='rq':
-    source,target,hops = tuple(data)
-    return routerequest ( source,target,hops,fro )
-
-  #route response action
-  if command=='rr':
-    source,target,hops = tuple(data)
-    return routeresponse ( source,target,hops,fro )
-"""
