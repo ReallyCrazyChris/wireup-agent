@@ -5,7 +5,7 @@ import ustruct
 import time
 
 import socket
-from config import nodekey, ip, port, multiaddr
+from config import nodekey, ip, port, multiaddr, ssid, passwd
 from bencode import bencode, bdecode
 from reactor import react
 from queue import queue, receive, process
@@ -17,7 +17,7 @@ store = Store()
 _sta = network.WLAN(network.STA_IF)
 
 if not _sta.isconnected():
-    print('connecting to network...', ssid)
+    print('connecting to network:', ssid)
     _sta.active(True)
     _sta.connect(ssid, passwd)
 
@@ -51,8 +51,10 @@ def listen():
     s.setsockopt(socket.IPPROTO_IP, socket.IP_ADD_MEMBERSHIP, mreq)
     s.setblocking(False)
     time.sleep(1)           # sleep for 1 second
+
     while True:
-        receiveupd(store, s)
+        process(react)
+        receiveupd(s)  
         sendudp(queue, s)
 
 def receiveupd(socket):
@@ -99,3 +101,4 @@ def sendudp(queue, socket):
                 print('destination unknown for', toid)
         
     queue.clear()
+    

@@ -67,9 +67,6 @@ def listen():
         receiveupd(s)  
         sendudp(queue, s)
         
-        
-
-            
 def receiveupd(socket):
 
     try:
