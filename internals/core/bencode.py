@@ -178,4 +178,4 @@ encode_func = {
 
 
 def bencode(x):
-    return encode_func[type(x)](x)
+    return bytes(encode_func[type(x)](x))

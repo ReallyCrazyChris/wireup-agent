@@ -26,14 +26,14 @@ class Brick(Model):
       'output': False
     }
 
-  def start(self,store):
+  def start(self):
     self.on('inputA',self.evaluate)
     self.on('inputB',self.evaluate)
 
-  def stop(self,store):
+  def stop(self):
     self.commit('output', False)
 
-  def evaluate(self, store, prop, value):
+  def evaluate(self, model, prop, value):
     if self.props['inputA'] and self.props['inputB']:
       self.commit('output', True)
     else:

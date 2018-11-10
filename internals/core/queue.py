@@ -23,6 +23,5 @@ def receive(action):
 
 def process(react):
     for i in range(len(actions)):
-    #while len(actions):
         action = actions.pop(0)
         react(action[0],action[1])
