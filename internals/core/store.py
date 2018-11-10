@@ -35,8 +35,6 @@ class Store():
       for callback in self.ev[name]:
         callback(*args)
 
-  	
-  
   ## toDic converts the Store to a dictionary
   def toDict(self):
     

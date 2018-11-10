@@ -11,9 +11,9 @@ def react(command, data):
 
   #update model action
   if  command=='udm':
-      nodeid,modelid,prop,value = tuple(data)
+      nodeid = data[0]
       if nodekey == nodeid:
-        return mutations.updatemodel(modelid, prop, value)
+        return mutations.updatemodel(*data)
       send('udm', data, nodeid)
   
   #wire action

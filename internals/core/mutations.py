@@ -45,12 +45,19 @@ def addbrick(brickname):
 # @param prop string
 # @param value any
 # @param s store reference
-def updatemodel(modelid,prop,value):
+def updatemodel(nodeid,modelid,prop,value,origin=None):
 
-    if (modelid in store.models)==False: return # unknowm model
-
+    if (nodeid == store.nodeid) == False: return #unknown store
+    if (modelid in store.models) == False: return # unknowm model
     model = store.models[modelid]
-
+    if (prop in model.props) == False: return #unknown prop
+    
+    if origin == model.nodeid+modelid+prop: # circular race condition detected
+       print('race condition') 
+       return 
+    
+    origin = origin or model.nodeid+modelid+prop # detect future reace condition by setting an origin
+ 
     proptype = model.meta[prop]['type']
 
     coercedvalue = coerce(value,proptype) # coerces the value to the property type
@@ -71,7 +78,7 @@ def updatemodel(modelid,prop,value):
     # propagate the value to the wire listeners
     for listeneruri in wirelisteners:
         listenernodeid,listnermodlid,listenerprop = tuple(listeneruri.split('/'))
-        send('udm',[listenernodeid,listnermodlid,listenerprop,coercedvalue],listenernodeid)
+        send('udm',[listenernodeid,listnermodlid,listenerprop,coercedvalue,origin],listenernodeid)
 
 ## add wire listener, to be nitified when a model property changes
 # producer string uri of the producer property

@@ -31,7 +31,7 @@ class Model():
         callback(*args)   
 
   def commit(self, prop, value):
-      updatemodel(self.id, prop, value)
+      updatemodel(self.nodeid, self.id, prop, value)
 
   ## lifecycle start method
   def start(self):
