@@ -3,49 +3,51 @@ from model import Model
 class Product(Model):
 
   def __init__(self):
-    super(Product, self).__init__()
+      super(Product, self).__init__()
     
-    self.type = '{{typename name}}'
+      self.clazz='Product'
+      self.type = '{{typename name}}'
+      self.version = '0.0.1'
 
-    self.meta = {
-      'imageurl'    :{'index':0, 'type':'url',    'display':'image',  'group':'info', 'label':'Image'},  
-      'company'     :{'index':1, 'type':'string', 'display':'text',   'group':'info', 'label':'Company'},
-      'name'        :{'index':2, 'type':'string', 'display':'text',   'group':'info', 'label':'Name'},
-      'description' :{'index':3, 'type':'string', 'display':'text',   'group':'info', 'label':'Description'}, 
-      {{#each meta}}
-      '{{typename name}}':{'index':{{indexadjust @index}}, 'type':'{{typename type}}', 'display':'{{display}}', 'group':'{{group}}', 'label':'{{label}}'{{#if units}}, 'units':'{{units}}'{{/if}} },
-      {{/each}} 
-    }
+      self.meta = {
+        'imageurl'    :{'index':0, 'type':'url',    'display':'image',  'group':'info', 'label':'Image'},  
+        'company'     :{'index':1, 'type':'string', 'display':'text',   'group':'info', 'label':'Company'},
+        'name'        :{'index':2, 'type':'string', 'display':'text',   'group':'info', 'label':'Name'},
+        'description' :{'index':3, 'type':'string', 'display':'text',   'group':'info', 'label':'Description'}, 
+        {{#each meta}}
+        '{{typename name}}':{'index':{{indexadjust @index}}, 'type':'{{typename type}}', 'display':'{{display}}', 'group':'{{group}}', 'label':'{{label}}'{{#if units}}, 'units':'{{units}}'{{/if}} },
+        {{/each}} 
+      }
 
-    self.props = {
-      'imageurl':'https://www.cameolight.com/out/media/image/cameo_header_lighteffects.jpg',
-      'company':'{{company}}',
-      'name':'{{name}}',
-      'description':'{{description}}',
+      self.props = {
+        'imageurl':'https://www.cameolight.com/out/media/image/cameo_header_lighteffects.jpg',
+        'company':'{{company}}',
+        'name':'{{name}}',
+        'description':'{{description}}',
+        {{#each meta}}
+        '{{typename name}}': {{{stringAssist value}}},
+        {{/each}}
+      }
+
+  def start(self):
+      print('starting product {{company}} {{name}}')
+
       {{#each meta}}
-      '{{typename name}}': {{{stringAssist value}}},
+      # {{typename name}} change event handler
+      # self.on('{{typename name}}',lambda product, prop, value : print('{{typename name}} event',product.id, prop, value))
+      {{/each}}  
+
+  def stop(self):
+      print('stopping product {{company}} {{name}}')
+      {{#each meta}}
+      self.commit('{{typename name}}', {{{stringAssist value}}})
       {{/each}}
-    }
 
-  def start(self,store):
-    print('starting product {{company}} {{name}}')
-    # uncomment to register the needed event handlers
-    {{#each meta}}
-    # {{typename name}} change event handler
-    self.on('{{typename name}}',self.handler)
-    {{/each}}  
-
-  def stop(self,store):
-    print('stopping product {{company}} {{name}}')
-    {{#each meta}}
-    store.updatemodel(self.nodeid, self.id, '{{typename name}}', {{{stringAssist value}}})
-    {{/each}}
-
-  def handler(self, store, prop, value):
-    print(prop, ' set to value ', value)
-    # uncomment to register the needed event handlers 
-    # store.updatemodel(self.nodeid, self.id, prop, value)    
-    # store.updatemodel(self.nodeid, self.id, 'description', 'a new description')    
-        
+  {{#each meta}}
+  def {{typename name}}Handler(self, product, prop, value):
+      print('property {} set to new value {}'.format(prop, value))
+      # self.commit('{{typename name}}', {{{stringAssist value}}})
+  {{/each}}   
+      
   def toDescription(self):
-    return [self.type,self.props['imageurl'],self.props['company'],self.props['name'],self.props['description']]
+      return [self.clazz,self.type,self.props['imageurl'],self.props['company'],self.props['name'],self.props['description']]
