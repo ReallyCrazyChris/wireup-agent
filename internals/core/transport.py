@@ -76,6 +76,7 @@ def receiveupd(socket):
         pass
     else:
         if msg:
+            print(msg)
             packets = bdecode(msg)
 
             if packets == False: return
