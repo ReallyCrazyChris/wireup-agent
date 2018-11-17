@@ -34,6 +34,10 @@ class Store():
     if (name in self.ev) == True:
       for callback in self.ev[name]:
         callback(*args)
+    if ('*' in self.ev) == True:    
+      for callback in self.ev['*']:
+        callback(*args)
+    
 
   ## toDic converts the Store to a dictionary
   def toDict(self):
