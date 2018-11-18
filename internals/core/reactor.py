@@ -8,7 +8,6 @@ sendgroup = {} # table of destinations
 
 def send(command, args, tonodeid):
     if  nodekey == tonodeid: 
-        print('internal communicatio  ...',[command,args])
         reactQueueAppend(bdecode(bencode([command,args]))) # TODO is there a better way, faster ?
     else:
         if (tonodeid in sendgroup) == False:
@@ -31,7 +30,7 @@ def react():
 # @param data list
 def processCommand(command, data):
 
-  print('react',command,data)
+  #print('react',command,data)
 
   #update model action
   if  command=='udm':

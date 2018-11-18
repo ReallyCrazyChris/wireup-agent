@@ -33,15 +33,11 @@ def listen():
     sock = getsocket()
     websock = getwebsocket()
 
-    print('moop')
-
     loop = asyncio.get_event_loop()
-
-    #loop.create_task( receiveudpTask(sock) )
+    loop.create_task( receiveudpTask(sock) )
     loop.create_task( websocketTask(websock) )
-    #loop.create_task( reactTask() )
-    #loop.create_task( sendudpTask(sock) )
-
+    loop.create_task( reactTask() )
+    loop.create_task( sendudpTask(sock) )
     loop.run_forever()
 
 if __name__ == "__main__":

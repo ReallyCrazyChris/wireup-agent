@@ -1,19 +1,32 @@
 import socket
-
-from config import ip, port, multiaddr
 from bencode import bencode, bdecode
 from reactor import reactQueueAppend, sendgroup
 
+try: # try to make this work for both python37 and micropython
+    import ustruct as struct 
+    from joinwifi import ip                  
+except ImportError:
+    import struct
+    from config import ip
+
 rt = {} # routing table
+port = 3300 
+multiaddr = '225.0.0.37' 
+
+def aton(ipv4address):
+  a = []
+  for i in ipv4address.split('.'):
+    a.append(int(str(i)))
+  return struct.pack('BBBB', a[0],a[1],a[2],a[3])
 
 def getsocket():
-    # bind to a network adapter on ip and port
-    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)  # Create a IPv4/UDP socket  
+    
+    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1) # Reuse the network adapter for other protocols
-    sock.bind((ip,port))     # Bind to a network adapter on port
+    sock.bind((ip,port)) #bind to a network adapter on ip and port
 
     # register as a multicast listener with the router.
-    mreq=socket.inet_aton(multiaddr)+socket.inet_aton(ip) # calcualte the multicast receiver enrt
+    mreq=aton(multiaddr) + aton(ip)
     sock.setsockopt(socket.IPPROTO_IP, socket.IP_ADD_MEMBERSHIP, mreq)    # Register as a muticast receiver 
     sock.setblocking(False)
 
@@ -27,7 +40,7 @@ def receiveudp (sock):
         pass
     else:
         if msg:
-            print(msg)
+            # print(msg)
             packets = bdecode(msg)
             if packets == False: return 
             #print(packets)
