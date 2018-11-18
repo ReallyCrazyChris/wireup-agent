@@ -43,7 +43,7 @@ def receiveudp (sock):
             # print(msg)
             packets = bdecode(msg)
             if packets == False: return 
-            #print(packets)
+            print(packets)
             to = packets.pop()   #  pop off to nodeid value
             fro = packets.pop()  #  pop off from nodeid value
 

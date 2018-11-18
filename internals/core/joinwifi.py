@@ -1,4 +1,4 @@
-import network
+import network 
 from config import ssid, passwd
 
 # join a wifi access point
