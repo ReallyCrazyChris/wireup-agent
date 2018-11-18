@@ -10,6 +10,7 @@ actions = []
 # @param tonodeid string identifier of the recipient node
 def send(command, args, tonodeid):
     if  nodekey == tonodeid:
+        print('internal ...')
         receive(bdecode(bencode([command,args])))
     else:
         if (tonodeid in queue) == False:
@@ -23,5 +24,5 @@ def receive(action):
 
 def process(react):
     for i in range(len(actions)):
-        action = actions.pop(0)
-        react(action[0],action[1])
+        data = actions.pop(0)
+        react(data)

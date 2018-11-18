@@ -1,5 +1,5 @@
 from config import nodekey
-from queue import send
+from reactor import send
 
 # announce the product on the network
 ## @param tonodeid string oprional - nodeid of a specific other WireUP afent

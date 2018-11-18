@@ -1,11 +1,35 @@
 import mutations
 from config import nodekey
-from queue import send
+from asyncio import sleep
+from bencode import bencode, bdecode
+
+reactqueue = []
+sendgroup = {} # table of destinations
+
+def send(command, args, tonodeid):
+    if  nodekey == tonodeid: 
+        print('internal communicatio  ...',[command,args])
+        reactQueueAppend(bdecode(bencode([command,args]))) # TODO is there a better way, faster ?
+    else:
+        if (tonodeid in sendgroup) == False:
+            sendgroup[tonodeid] =  [nodekey,tonodeid]  #create a sendgroup for the destinaiton, push form and to
+
+        if (tonodeid in sendgroup) == True:
+            sendgroup[tonodeid].insert(0,[command,args]) #push on the  args
+
+# adds data to the reactqueue
+def reactQueueAppend(data):
+    reactqueue.append(data)
+
+def react():
+    for i in range(len(reactqueue)): # TODO better way ?
+        action = reactqueue.pop(0)
+        processCommand(action[0],action[1]) # TODO use *data ?   
 
 ##react to an incoming command
 # @param command string
 # @param data list
-def react(command, data):
+def processCommand(command, data):
 
   print('react',command,data)
 
