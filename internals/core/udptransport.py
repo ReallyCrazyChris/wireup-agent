@@ -1,4 +1,5 @@
 import socket
+import time
 from bencode import bencode, bdecode
 from reactor import reactQueueAppend, sendgroup
 
@@ -27,23 +28,27 @@ def getsocket():
 
     # register as a multicast listener with the router.
     mreq=aton(multiaddr) + aton(ip)
+    print('mreq',multiaddr,ip,mreq)
     sock.setsockopt(socket.IPPROTO_IP, socket.IP_ADD_MEMBERSHIP, mreq)    # Register as a muticast receiver 
     sock.setblocking(False)
+
+    time.sleep(1)
 
     return sock
 
 def receiveudp (sock):
     try:
-        msg, address = sock.recvfrom(4096) # Buffer size is 2048. Change as needed.
+        msg, address = sock.recvfrom(1024) # Buffer size is 2048. Change as needed.
     except: 
         # exceptions will be continoulsy thrown due to the non-blocking of recivefrom
         pass
     else:
         if msg:
-            # print(msg)
+            print(msg) 
+            return
             packets = bdecode(msg)
             if packets == False: return 
-            print(packets)
+    
             to = packets.pop()   #  pop off to nodeid value
             fro = packets.pop()  #  pop off from nodeid value
 
@@ -58,7 +63,7 @@ def sendudp (sock):
     for nodeid in sendgroup:
 
         packets = sendgroup[nodeid]
-    
+        print(packets)
         if packets:
             data = bencode(packets)
             if nodeid == "all" : #  multicast
