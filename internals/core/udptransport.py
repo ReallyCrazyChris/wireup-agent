@@ -15,10 +15,11 @@ port = 3300
 multiaddr = '225.0.0.37' 
 
 def aton(ipv4address):
-  a = []
-  for i in ipv4address.split('.'):
-    a.append(int(str(i)))
-  return struct.pack('BBBB', a[0],a[1],a[2],a[3])
+    """Convert an IPv4 address to 32-bit packed binary format"""
+    a = []
+    for i in ipv4address.split('.'):
+        a.append(int(str(i)))
+    return struct.pack('BBBB', a[0],a[1],a[2],a[3])
 
 def getsocket():
     
@@ -30,23 +31,23 @@ def getsocket():
     mreq=aton(multiaddr) + aton(ip)
     print('mreq',multiaddr,ip,mreq)
     sock.setsockopt(socket.IPPROTO_IP, socket.IP_ADD_MEMBERSHIP, mreq)    # Register as a muticast receiver 
-    sock.setblocking(False)
-
-    time.sleep(1)
-
+    #sock.setblocking(False)
+    sock.settimeout(0.0001)
     return sock
 
 def receiveudp (sock):
     try:
-        msg, address = sock.recvfrom(1024) # Buffer size is 2048. Change as needed.
-    except: 
-        # exceptions will be continoulsy thrown due to the non-blocking of recivefrom
+        bytes_, address = sock.recvfrom(2048) # Buffer size is 2048. Change as needed.
+    except socket.timeout:
         pass
+    except Exception:
+        pass
+        # exceptions will be continoulsy thrown due to the non-blocking of recivefrom
     else:
-        if msg:
-            print(msg) 
-            return
-            packets = bdecode(msg)
+        if bytes_:
+            print('receiveudp', bytes_, len(bytes_))
+      
+            packets = bdecode(bytes_)
             if packets == False: return 
     
             to = packets.pop()   #  pop off to nodeid value
@@ -63,15 +64,16 @@ def sendudp (sock):
     for nodeid in sendgroup:
 
         packets = sendgroup[nodeid]
-        print(packets)
+      
         if packets:
             data = bencode(packets)
+            print('sendudp', data)
             if nodeid == "all" : #  multicast
-                sock.sendto(data, (multiaddr,port))
+                print(sock.sendto(data, (multiaddr,port)) ,len(data))
             
             elif (nodeid in rt)==True : #  unicast 
-                sock.sendto(data, rt[nodeid])
-            
+                #print(sock.sendto(data, (multiaddr,port)) ,len(data))
+                print(sock.sendto(data, rt[nodeid]), len(data))
             else:
                 print('destination unknown for', nodeid) 
 

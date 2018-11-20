@@ -1,3 +1,4 @@
+print('go...')
 from product import Product
 from mutations import addmodel
 from actions import announce

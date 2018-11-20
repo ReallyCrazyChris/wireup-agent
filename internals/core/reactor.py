@@ -1,6 +1,5 @@
 import mutations
 from config import nodekey
-from asyncio import sleep
 from bencode import bencode, bdecode
 
 reactqueue = []
@@ -22,6 +21,7 @@ def reactQueueAppend(data):
 
 def react():
     for i in range(len(reactqueue)): # TODO better way ?
+        print('reactqueue heap {}'.format(len(reactqueue)))
         action = reactqueue.pop(0)
         processCommand(action[0],action[1]) # TODO use *data ?   
 

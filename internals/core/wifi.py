@@ -1,8 +1,7 @@
 import network 
 from config import ssid, passwd
-
 # join a wifi access point
-def joinwifi(ssid, passwd):
+def joinwifi():
     station = network.WLAN(network.STA_IF) # initiate a station mode
 
     if not station.isconnected():
@@ -21,5 +20,3 @@ def joinwifi(ssid, passwd):
     print('connected as:', ip)
 
     return ip
-
-ip = joinwifi(ssid, passwd)

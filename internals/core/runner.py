@@ -4,7 +4,7 @@ except ImportError:
     import asyncio
   
 from udptransport import getsocket, receiveudp, sendudp
-#from wstransport import getwebsocket
+from wstransport import getwebsocket
 from reactor import react
 
 """
@@ -33,9 +33,10 @@ async def websocketTask(websock):
 def listen():
 
     sock = getsocket()
-    #websock = getwebsocket()
+    websock = getwebsocket()
 
     while 1:
+        websock.serveonce()
         receiveudp(sock)
         react()
         sendudp(sock)
