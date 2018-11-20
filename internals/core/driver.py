@@ -2,14 +2,14 @@ import uasyncio as asyncio
 from typecoersion import coerce
 from machine import Pin
 
-# initialize hardware
+# initialize hardware (uncomment as needed)
 _power = Pin(0, Pin.IN)
 _onoff = Pin(14,Pin.OUT)
 
 def startdriver(product):
     """ initialize and start the hardware driver as a daemon """
 
-    # listen for product events and 
+    # listen for product events  (uncomment as needed)
     product.on('onoff',lambda model,name,value: _onoff.value( coerce( value, 'integer' ) ) )
 
     #add a pollTask ot the event loop    

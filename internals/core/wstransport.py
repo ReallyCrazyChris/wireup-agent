@@ -32,8 +32,5 @@ def getwebsocket():
     websocketserver = SimpleWebSocketServer(ip, 9090, WssHandler)   
     # register for all store events
     store.on('*', lambda *args: updateAllClients(websocketserver,store))  
+
     return websocketserver
-
-
-if __name__ == "__main__":
-    getwebsocket()

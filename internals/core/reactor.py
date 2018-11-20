@@ -21,7 +21,6 @@ def reactQueueAppend(data):
 
 def react():
     for i in range(len(reactqueue)): # TODO better way ?
-        print('reactqueue heap {}'.format(len(reactqueue)))
         action = reactqueue.pop(0)
         processCommand(action[0],action[1]) # TODO use *data ?   
 
@@ -29,9 +28,7 @@ def react():
 # @param command string
 # @param data list
 def processCommand(command, data):
-
   #print('react',command,data)
-
   #update model action
   if  command=='udm':
       nodeid = data[0]

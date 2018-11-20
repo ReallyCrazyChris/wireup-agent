@@ -1,52 +1,36 @@
 try:
-    import uasyncio as asyncio                    
+    import asyncio            
 except ImportError:
-    import asyncio
+    import uasyncio as asyncio   
+    from wifi import joinwifi    
   
 from udptransport import getsocket, receiveudp, sendudp
 from wstransport import getwebsocket
 from reactor import react
+from config import ip
 
-"""
-async def receiveudpTask(sock):
+async def mainTask(sock):
     while 1:
-        await asyncio.sleep(0)
         receiveudp(sock)
         react()
         sendudp(sock)
-
-async def reactTask():
-    while 1:
         await asyncio.sleep(0)
-        react()
 
-async def sendudpTask(sock):
+async def websockTask():
+    websock = getwebsocket()
     while 1:
-        await asyncio.sleep(0)
-        sendudp(sock)
-
-async def websocketTask(websock):
-    while 1:
-        await asyncio.sleep(0)
         websock.serveonce()
-"""
+        await asyncio.sleep(0)
+
 def listen():
 
-    sock = getsocket()
-    websock = getwebsocket()
+    try:#micropython approach
+        sock = getsocket(joinwifi())
+    except Exception:
+        #cpython approach
+        sock = getsocket(ip)
 
-    while 1:
-        websock.serveonce()
-        receiveudp(sock)
-        react()
-        sendudp(sock)
-
-    #loop = asyncio.get_event_loop()
-    #loop.create_task( receiveudpTask(sock) )
-    #loop.create_task( websocketTask(websock) )
-    #loop.create_task( reactTask() )
-    #loop.create_task( sendudpTask(sock) )
-    #loop.run_forever()
-
-if __name__ == "__main__":
-    listen()
+    loop = asyncio.get_event_loop()
+    loop.create_task( mainTask(sock) )
+    loop.create_task( websockTask() )
+    loop.run_forever()
