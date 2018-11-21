@@ -5,6 +5,10 @@ passwd = "Calmhat436"
 ip = '192.168.2.107'
 # securiy keys
 privatekey = "security to be implemented"
-publickey = "security to be implemented"
-# hash of the public key
-nodekey = "vandiervcqhgwmg"
+publickey  = "security to be implemented"
+# hash of the public key forms the identifier of the product
+nodekey    = "wemosbutton"
+
+
+
+
