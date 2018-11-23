@@ -1,6 +1,6 @@
 import socket
 from bencode import bencode, bdecode
-from reactor import reactQueueAppend, sendgroup, react
+from reactor import receive, sendqueue, react
 
 try: # try to make this work for both python37 and micropython
     import ustruct as struct            
@@ -36,48 +36,43 @@ def getsocket(ip):
 def receiveudp (sock):
     """ receives datagram messages and queues them for processing, updates a routing table """
     try:
-        bytes_, address = sock.recvfrom(2048) # Buffer size is 2048. Change as needed.
+        data, address = sock.recvfrom(2048) # Buffer size is 2048. Change as needed.
     except Exception:
         pass
         # exceptions will be continoulsy thrown due to the non-blocking of recivefrom
     else:
-        if bytes_:
-            print('receiveudp', bytes_, len(bytes_))
+        if data:
+            # print('receiveudp', data, len(data))
       
-            packets = bdecode(bytes_)
+            packet = bdecode(data)
 
-            #packet = [fro,to,command,arg1,arg2,...]
-      
-            fro = packet.pop(0)
-
-            if packets == False: return 
+            if packet == False: return 
     
-            to = packets.pop()   #  pop off to nodeid value
-            fro = packets.pop()  #  pop off from nodeid value
+            print('receive', packet)
 
+            #to = packet.pop()   #  pop off to nodeid value
+            #fro = packet.pop()  #  pop off from nodeid value
+            fro = packet[0]
             if fro:
                 rt[fro] = (address[0],address[1])  # update the routing table
 
-            while len(packets): # TODO better bad packedt detection, use itterator
-                data = packets.pop()
-                reactQueueAppend(data)
+            receive(packet)
 
 def sendudp (sock):
-    """ unqueus grouped messages per destination, resolves the address for the routing table and sends"""
-    for nodeid in sendgroup:
+    """ """
+    for packet in sendqueue:
 
-        packets = sendgroup[nodeid]
-      
-        if packets:
-            data = bencode(packets)
-            print('sendudp', data)
-            if nodeid == "all" : #  multicast
+            nodeid = packet[1]
+            data = bencode(packet)
+            #print('sendudp',data)
+            if nodeid == 0 : #  multicast
                 print(sock.sendto(data, (multiaddr,port)) ,len(data))
             
             elif (nodeid in rt)==True : #  unicast 
                 #print(sock.sendto(data, (multiaddr,port)) ,len(data))
                 print(sock.sendto(data, rt[nodeid]), len(data))
             else:
-                print('destination unknown for', nodeid) 
-
-    sendgroup.clear()
+                print('destination unknown for', nodeid)
+                print('multicasting...') 
+                print(sock.sendto(data, (multiaddr,port)) ,len(data))
+    sendqueue.clear()

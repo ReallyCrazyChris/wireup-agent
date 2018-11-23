@@ -7,9 +7,8 @@ from store import Store
 store = Store()  # singelton
 
 
-def announce(to='all'):
-    product = store.models['0']
-    send(to, 'ad', product.toDescription())
+def announce(product,to=0):
+    send(nodekey, to, 'ad', product.toDescription())
 
 
 def addmodel(model):
@@ -27,7 +26,7 @@ def addmodel(model):
     model.start()  # lifecycle start
 
     for shadowlistenerid in store.shadowlisteners:  # propagate to shadow listeners
-        send(shadowlistenerid, 'sam', model.toDict())
+        send(nodekey, shadowlistenerid, 'sam', model.toDict())
 
 
 def removemodel(modelid):
@@ -37,7 +36,7 @@ def removemodel(modelid):
     model.stop()
 
     for shadowlistenerid in store.shadowlisteners:  # propagate to shadow listeners
-        send(shadowlistenerid, 'srm', model.nodeid, model.id)
+        send(nodekey, shadowlistenerid, 'srm', model.nodeid, model.id)
 
     del store.models[modelid]
 
@@ -78,7 +77,7 @@ def updatemodel(modelid, prop, value, salt=None):
 
     # propagate to shadow models
     for shadownodeid in store.shadowlisteners:
-        send(shadownodeid, 'udsm', model.nodeid, model.id, prop, coercedvalue)
+        send(nodekey, shadownodeid, 'udsm', model.nodeid, model.id, prop, coercedvalue)
 
     if (prop in model.wires) == False:
         return  # any wire listeners for prop
@@ -88,7 +87,7 @@ def updatemodel(modelid, prop, value, salt=None):
     for listeneruri in wirelisteners:
         listenernodeid, listnermodlid, listenerprop = tuple(
             listeneruri.split('/'))
-        send(listenernodeid, 'udm', listenernodeid,
+        send(nodekey, listenernodeid, 'udm', listenernodeid,
              listnermodlid, listenerprop, coercedvalue, salt)
 
 
@@ -113,10 +112,10 @@ def addwirelistener(producer, consumer):
         model.wires[pprop][consumer] = ''
 
     for shadowlistenerid in store.shadowlisteners:  # propagate to shadow listeners
-        send(shadowlistenerid, 'sawl', producer, consumer)
+        send(nodekey, shadowlistenerid, 'sawl', producer, consumer)
 
     # propagate the value to the property listener
-    send(cnodeid, 'udm', cnodeid, cmodelid, cprop, model.props[pprop])
+    send(nodekey, cnodeid, 'udm', cnodeid, cmodelid, cprop, model.props[pprop])
 
     # save the store state to non-volatile memory, so the wire state is remembered
     store.serialize()
@@ -143,7 +142,7 @@ def removewirelistener(producer, consumer):
             del model.wires[pprop][consumer]
 
     for shadowlistenerid in store.shadowlisteners:  # propagate to shadow listeners
-        send(shadowlistenerid, 'srwl', producer, consumer)
+        send(nodekey, shadowlistenerid, 'srwl', producer, consumer)
 
     # save the store state to non-volatile memory, so the wire state is remembered
     store.serialize()
@@ -157,7 +156,7 @@ def addshadowlistener(listenernodeid):
     for modelid in store.models:
         models[modelid] = (store.models[modelid]).toDict()
     # notify the listener the current models
-    send(listenernodeid, 'ash', store.nodeid, models)
+    send(nodekey, listenernodeid, 'ash', store.nodeid, models)
 
 
 def removeshadowlistener(listenernodeid):
@@ -166,7 +165,7 @@ def removeshadowlistener(listenernodeid):
         # unregister the shadow listener
         del store.shadowlisteners[listenernodeid]
         # notify the listener the current models
-        send('rsh', [store.nodeid], listenernodeid)
+        send(nodekey, 'rsh', [store.nodeid], listenernodeid)
 
 
 """ from here on master node only """

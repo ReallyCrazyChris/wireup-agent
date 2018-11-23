@@ -5,7 +5,7 @@ sendqueue = []
 receivequeue = []
 
 def send(*data):
-    if  nodekey == data[0]: # data[0] is the to nodeid 
+    if  nodekey == data[1]: # data[1] is the to nodeid 
         receivequeue.append(data)
     else:
         sendqueue.append(data)
@@ -15,9 +15,15 @@ def receive(data):
 
 def react():
     """ processed the receivequeue"""
-    for data in receivequeue:
-        if  nodekey == data[1]:  # data[1] is the tonodeid   
-          locals()[data[2]](*data) # data[2] is the command
+    for packet in receivequeue:
+       
+        if  not packet[1] in [nodekey, 0]: return # not for me and not a multicast
+        if  not packet[2] in actions: return # not a known action 
+
+        print('calling action',actions[packet[2]])
+
+        actions[packet[2]](*packet)            
+
     receivequeue.clear()
     # TODO garbatge collector ??      
 
@@ -25,15 +31,15 @@ def udm(fro, to, command, modelid, prop, value, salt=None):
     if to == nodekey: # forward to intended nodeid
         mutations.updatemodel(modelid, prop, value, salt=None)
         return
-    send(to, command, modelid, prop, value, salt)
+    send(nodekey, to, command, modelid, prop, value, salt)
 
 def w(fro, to, command, producer, consumer):
     """ request this agent to create a wire with another agent """
-    send(producer[0],'awl', producer,consumer)
+    send(nodekey, producer[0],'awl', producer,consumer)
 
 def uw(fro, to, command, producer, consumer):
     """ request this agent to create a wire with another agent """
-    send(producer[0],'rwl', producer,consumer)
+    send(nodekey, producer[0],'rwl', producer,consumer)
 
 def awl(fro, to, command, producer, consumer):
     """ adds a wire listener """
@@ -62,11 +68,26 @@ def rb(fro, to, command, modelid):
 def d(fro, to, command):
     """ discover responds with an anncoucnement to the requester """
     mutations.announce(fro)
+ 
+def ad(fro, to, command, description):
+    """ adds a description of a discovered product or service """
+    print('react ad',fro, to, command, description)
+    mutations.adddescription(fro,description)
 
 def announce(fro='all'):
     """ announces the produc description to all or a specific node"""
     mutations.announce(fro)
- 
-def ad(fro, to, command, description):
-    """ adds a description of a discovered product or service """
-    mutations.adddescription(fro,description)
+
+actions = {
+    'udm':udm,
+    'w':w,
+    'uw':uw,
+    'awl':awl,
+    'rwl':rwl,
+    'asl':asl,
+    'rsl':rsl,
+    'ab':ab,
+    'rb':rb,
+    'd':d,
+    'ad':ad
+}    

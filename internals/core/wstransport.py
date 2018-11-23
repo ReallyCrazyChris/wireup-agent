@@ -1,6 +1,6 @@
 from config import ip
 from SimpleWebSocketServer import SimpleWebSocketServer, WebSocket
-from reactor import reactQueueAppend
+from reactor import receive
 from bencode import bencode, bdecode
 from store import Store 
 
@@ -17,7 +17,7 @@ class WssHandler(WebSocket):
     def handleMessage(self):
         # print(self.address, self.data)
         action = bdecode( self.data )
-        reactQueueAppend(action)
+        receive(action)
             
     def handleConnected(self):
         #print(self.address, 'connected')
