@@ -15,8 +15,9 @@ def updateAllClients(websocketserver,store):
 class WssHandler(WebSocket):
 
     def handleMessage(self):
-        # print(self.address, self.data)
+        
         action = bdecode( self.data )
+        print(action)
         receive(action)
             
     def handleConnected(self):
