@@ -37,6 +37,23 @@ class Store():
       for callback in self.ev['*']:
         callback(*args)
   
-
+  
   def serialize(self):
       pass
+
+  # TODO currenlty only used by wstrasnport ... reduce memeory footprint
+  def toDict(self):
+      """converts the Store to a dictionary"""
+      models = {}
+
+      for modelid in self.models:
+        models[modelid] = self.models[modelid].toDict()
+
+      return {
+        'nodeid':self.nodeid,
+        'models':models,
+        'shadowlisteners':self.shadowlisteners,
+        'discovered':self.discovered,
+        'shadows':self.shadows,
+        #'bricks': bricks() # dictionary of installed bricks
+      }      
