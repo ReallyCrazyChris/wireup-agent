@@ -16,8 +16,6 @@ class Store():
     self.models = {}
     self.shadowlisteners = {}
     self.discovered = {}
-    self.twins = {}
-
 
   #EVENT
   #on - adds an event callback
@@ -38,36 +36,3 @@ class Store():
       for callback in self.ev['*']:
         callback(*args)
     
-
-  def model(self, modelid):
-      """ retrives a model by modelid """  
-      return self.models[modelid]
-
-  def addmodel(self, model):
-
-      model.start() # lifecycle start
-
-  def removemodel(self, modelud):
-      """ removes a model from the store """
-      pass
-
-  def injectmodleid(self, model):
-      """ gives a model its id """
-      if model.id == False: # provide an id if the model has none
-          self.pointer +=1
-          model.id = str(self.pointer)   #model.id is a string
-          model.nodeid = nodekey     # provide the model with a nodeid
-
-  def twin(self, nodeid):
-      """ retrives a twin by id """
-
-  def addtwin(self, twin):
-      """adds a model to the store"""
-      pass
-
-  def removetwin(self, nodeid):
-      """ removes a model from the store """
-      pass
-
-
-

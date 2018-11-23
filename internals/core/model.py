@@ -45,14 +45,6 @@ class Model():
     def stop(self):
         pass
 
-    def propvalue(self,name,value=None):
-        """ retreives a propvalue by prop name"""
-        if not value == None:
-            self.props[name] = value
-        return self.props[name]
 
-    def proptype(self,name):
-        """ retrives a prop type by prop name """
-        return self.meta[name].type
 
     
