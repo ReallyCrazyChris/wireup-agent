@@ -6,28 +6,37 @@ from reactor import send
 from store import Store
 store = Store() #singelton
 
+
+def announce(to='all'):
+    send(shadowlistenerid,'ad','mysescription')
+
 #addmodel - adds a Model instance to the store
 # @param store refence to store
 # @param model subclass object of Model
 def addmodel(model):
-  
-    if model.id in self.models:  return # model exists
 
-    self.injectmodleid(model)
+    if (model.id in store.models) == True: return # model exists
+      
+    if model.id == False: # provide an id if the model has none
+       store.pointer +=1
+    model.id = str(store.pointer)        #model.id is a string
+    model.nodeid = store.nodeid  # provide the model with a nodeid
+    
+    store.models[model.id] = model
 
-    self.models[model.id] = model
+    model.start() # lifecycle start
 
     for shadowlistenerid in store.shadowlisteners: # propagate to shadow listeners
-      send('sam',[model.toDict()],shadowlistenerid)
+        send(shadowlistenerid,'sam',model.toDict())
+
 
 def removemodel(modelid):
-
     if (modelid in store.models) == False: return # model does'nt exists  
     model = store.models[modelid]
     model.stop()
 
     for shadowlistenerid in store.shadowlisteners: # propagate to shadow listeners
-      send('srm',[model.nodeid,model.id],shadowlistenerid)
+      send(shadowlistenerid,'srm',model.nodeid,model.id)
 
     del store.models[modelid]
  
@@ -36,34 +45,55 @@ def addbrick(brickname):
     #addmodel(brickinstance)
     pass
 
-def updatemodel(modelid, prop, value, salt=None):
-    """ updates a models propery, notify's dital twins, and wire listeners """
+## updatemodel update model
+# @param modelid integer
+# @param prop string
+# @param value any
+# @param s store reference
+def updatemodel(modelid,prop,value,salt=None):
 
-    model = store.model(modelid)
+    
+    if (modelid in store.models) == False: return # unknowm model
+    model = store.models[modelid]
+    if (prop in model.props) == False: return #unknown prop
+    
+    # TODO reduce the size of the salt  
+    if salt == model.nodeid+modelid+prop: return # circular race condition detected
+    salt = salt or model.nodeid+modelid+prop # detect future reace condition by setting salt
+ 
+    proptype = model.meta[prop]['type']
 
-    newvalue = coerce(value, model.proptype(prop) )
+    coercedvalue = coerce(value,proptype) # coerces the value to the property type
 
-    if newvalue == model.propvalue(prop): return
+    if model.props[prop] == coercedvalue: return # no change to the value
 
-    model.propvalue(prop,newvalue)
+    model.props[prop] = coercedvalue # assigns the new value
 
-    model.emit(prop, model, prop, newvalue)
+    model.emit(prop, model, prop, model.props[prop]) # emit a property value change event
 
-    for twin in store.twins:
-        send(twin, 'updatetwin', modelid, prop, newvalue)
+    # propagate to shadow models
+    for shadownodeid in store.shadowlisteners:
+        send(shadownodeid,'udsm',model.nodeid,model.id,prop,coercedvalue)
 
-    for listener,modelid,prop in model.wirelisteners(prop): # listener = (nodeid,modelid,prop)
-        send(listener,'udm',modelid,prop,salt)
-
-
+    if (prop in model.wires)==False: return # any wire listeners for prop      
+    
+    wirelisteners = model.wires[prop]
+    # propagate the value to the wire listeners
+    for listeneruri in wirelisteners:
+        listenernodeid,listnermodlid,listenerprop = tuple(listeneruri.split('/'))
+        send(listenernodeid,'udm',listenernodeid,listnermodlid,listenerprop,coercedvalue,salt)
 
 ## add wire listener, to be nitified when a model property changes
 # producer string uri of the producer property
 # consumer string uri of the consumer property
 def addwirelistener(producer,consumer):
 
-    model = store.model(producer[1])
+    pnodeid,pmodelid,pprop = tuple(producer.split('/'))
+    cnodeid,cmodelid,cprop = tuple(consumer.split('/'))
 
+    if (pmodelid in store.models)==False: return # no such model
+
+    model = store.models[pmodelid]  
 
     if (pprop in model.props)==False: return # no such key  
 
@@ -73,14 +103,10 @@ def addwirelistener(producer,consumer):
     if (pprop in model.wires)==True:
       model.wires[pprop][consumer] = ''
 
-
-    for twin in store.twins:
-        send(twin, 'twinaddwirelistener', modelid, prop, newvalue)
-
     for shadowlistenerid in store.shadowlisteners: # propagate to shadow listeners
-      send('sawl',[producer,consumer],shadowlistenerid)  
+        send(shadowlistenerid,'sawl',producer,consumer)  
 
-    send('udm',[cnodeid,cmodelid,cprop,model.props[pprop]],cnodeid)   # propagate the value to the property listener
+    send(cnodeid,'udm',cnodeid,cmodelid,cprop,model.props[pprop]) # propagate the value to the property listener
 
     # save the store state to non-volatile memory, so the wire state is remembered
     store.serialize()
@@ -106,7 +132,7 @@ def removewirelistener(producer,consumer):
         del model.wires[pprop][consumer]
 
     for shadowlistenerid in store.shadowlisteners: # propagate to shadow listeners
-        send('srwl',[producer,consumer],shadowlistenerid)  
+        send(shadowlistenerid,'srwl',producer,consumer)  
     
     # save the store state to non-volatile memory, so the wire state is remembered
     store.serialize()
@@ -120,7 +146,7 @@ def addshadowlistener(listenernodeid ):
     models = {}
     for modelid in store.models:
       models[modelid] = (store.models[modelid]).toDict()    
-    send('ash',[store.nodeid,models],listenernodeid) # notify the listener the current models
+    send(listenernodeid,'ash',store.nodeid,models) # notify the listener the current models
 
 ## removeshadowlistener
 # listenerdata table shadoe lisener nodeid

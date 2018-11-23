@@ -43,13 +43,13 @@ def rwl(fro, to, command, producer, consumer):
     """ removes a wire listener """
     mutations.removewirelistener(producer, consumer)   
 
-def atl(fro, to, command, nodeid):
+def asl(fro, to, command, nodeid):
     """ add twin listener """
-    mutations.addtwinlistener(nodeid)
+    mutations.addshadowlistener(nodeid)
 
-def rtl(fro, to, command, nodeid):
+def rsl(fro, to, command, nodeid):
     """ remove twin listener """
-    mutations.removetwinlistener(nodeid)
+    mutations.removeshadowlistener(nodeid)
 
 def ab(fro, to, command, packagename):
     """ add brick """
