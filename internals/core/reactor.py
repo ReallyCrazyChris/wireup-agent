@@ -19,7 +19,7 @@ def react():
         if  nodekey == data[1]:  # data[1] is the tonodeid   
           locals()[data[2]](*data) # data[2] is the command
     receivequeue.clear()
-    # TODO garbatge collector      
+    # TODO garbatge collector ??      
 
 def udm(fro, to, command, modelid, prop, value, salt=None):
     if to == nodekey: # forward to intended nodeid
@@ -67,6 +67,6 @@ def announce(fro='all'):
     """ announces the produc description to all or a specific node"""
     mutations.announce(fro)
  
-def ad(fro, to, command, discovered):
-    """ adddiscovered """
-    mutations.adddiscovered(discovered)
+def ad(fro, to, command, description):
+    """ adds a description of a discovered product or service """
+    mutations.adddescription(fro,description)

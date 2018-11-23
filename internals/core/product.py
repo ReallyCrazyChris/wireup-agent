@@ -44,3 +44,5 @@ class Product(Model):
 
   def toDescription(self):
     return [self.clazz,self.type,self.props['imageurl'],self.props['company'],self.props['name'],self.props['description']]
+
+ 

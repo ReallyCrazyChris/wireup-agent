@@ -4,274 +4,288 @@ from typecoersion import coerce
 from reactor import send
 
 from store import Store
-store = Store() #singelton
+store = Store()  # singelton
 
 
 def announce(to='all'):
-    send(shadowlistenerid,'ad','mysescription')
+    product = store.models['0']
+    send(to, 'ad', product.toDescription())
 
-#addmodel - adds a Model instance to the store
-# @param store refence to store
-# @param model subclass object of Model
+
 def addmodel(model):
+    """adds a Model instance to the store"""
+    if (model.id in store.models) == True:
+        return  # model exists
 
-    if (model.id in store.models) == True: return # model exists
-      
-    if model.id == False: # provide an id if the model has none
-       store.pointer +=1
-    model.id = str(store.pointer)        #model.id is a string
+    if model.id == False:  # provide an id if the model has none
+        store.pointer += 1
+    model.id = str(store.pointer)  # model.id is a string
     model.nodeid = store.nodeid  # provide the model with a nodeid
-    
+
     store.models[model.id] = model
 
-    model.start() # lifecycle start
+    model.start()  # lifecycle start
 
-    for shadowlistenerid in store.shadowlisteners: # propagate to shadow listeners
-        send(shadowlistenerid,'sam',model.toDict())
+    for shadowlistenerid in store.shadowlisteners:  # propagate to shadow listeners
+        send(shadowlistenerid, 'sam', model.toDict())
 
 
 def removemodel(modelid):
-    if (modelid in store.models) == False: return # model does'nt exists  
+    if (modelid in store.models) == False:
+        return  # model does'nt exists
     model = store.models[modelid]
     model.stop()
 
-    for shadowlistenerid in store.shadowlisteners: # propagate to shadow listeners
-      send(shadowlistenerid,'srm',model.nodeid,model.id)
+    for shadowlistenerid in store.shadowlisteners:  # propagate to shadow listeners
+        send(shadowlistenerid, 'srm', model.nodeid, model.id)
 
     del store.models[modelid]
- 
+
+
 def addbrick(brickname):
+    """not yet implemented"""
     #brickinstance = importlib.import_module('bricks.'+str( brickname ) ).Brick()
-    #addmodel(brickinstance)
+    # addmodel(brickinstance)
     pass
 
-## updatemodel update model
-# @param modelid integer
-# @param prop string
-# @param value any
-# @param s store reference
-def updatemodel(modelid,prop,value,salt=None):
 
-    
-    if (modelid in store.models) == False: return # unknowm model
+def updatemodel(modelid, prop, value, salt=None):
+    """ updates a property value, notifies shadow listeners and wire listeners """
+    if (modelid in store.models) == False:
+        return  # unknowm model
     model = store.models[modelid]
-    if (prop in model.props) == False: return #unknown prop
-    
-    # TODO reduce the size of the salt  
-    if salt == model.nodeid+modelid+prop: return # circular race condition detected
-    salt = salt or model.nodeid+modelid+prop # detect future reace condition by setting salt
- 
+    if (prop in model.props) == False:
+        return  # unknown prop
+
+    # TODO reduce the size of the salt
+    if salt == model.nodeid+modelid+prop:
+        return  # circular race condition detected
+    # detect future reace condition by setting salt
+    salt = salt or model.nodeid+modelid+prop
+
     proptype = model.meta[prop]['type']
 
-    coercedvalue = coerce(value,proptype) # coerces the value to the property type
+    # coerces the value to the property type
+    coercedvalue = coerce(value, proptype)
 
-    if model.props[prop] == coercedvalue: return # no change to the value
+    if model.props[prop] == coercedvalue:
+        return  # no change to the value
 
-    model.props[prop] = coercedvalue # assigns the new value
+    model.props[prop] = coercedvalue  # assigns the new value
 
-    model.emit(prop, model, prop, model.props[prop]) # emit a property value change event
+    # emit a property value change event
+    model.emit(prop, model, prop, model.props[prop])
 
     # propagate to shadow models
     for shadownodeid in store.shadowlisteners:
-        send(shadownodeid,'udsm',model.nodeid,model.id,prop,coercedvalue)
+        send(shadownodeid, 'udsm', model.nodeid, model.id, prop, coercedvalue)
 
-    if (prop in model.wires)==False: return # any wire listeners for prop      
-    
+    if (prop in model.wires) == False:
+        return  # any wire listeners for prop
+
     wirelisteners = model.wires[prop]
     # propagate the value to the wire listeners
     for listeneruri in wirelisteners:
-        listenernodeid,listnermodlid,listenerprop = tuple(listeneruri.split('/'))
-        send(listenernodeid,'udm',listenernodeid,listnermodlid,listenerprop,coercedvalue,salt)
+        listenernodeid, listnermodlid, listenerprop = tuple(
+            listeneruri.split('/'))
+        send(listenernodeid, 'udm', listenernodeid,
+             listnermodlid, listenerprop, coercedvalue, salt)
 
-## add wire listener, to be nitified when a model property changes
-# producer string uri of the producer property
-# consumer string uri of the consumer property
-def addwirelistener(producer,consumer):
 
-    pnodeid,pmodelid,pprop = tuple(producer.split('/'))
-    cnodeid,cmodelid,cprop = tuple(consumer.split('/'))
+def addwirelistener(producer, consumer):
+    """add wire listener, to be notified when a model property changes, updates/notifies shadow listeners"""
 
-    if (pmodelid in store.models)==False: return # no such model
+    pnodeid, pmodelid, pprop = tuple(producer.split('/'))
+    cnodeid, cmodelid, cprop = tuple(consumer.split('/'))
 
-    model = store.models[pmodelid]  
+    if (pmodelid in store.models) == False:
+        return  # no such model
 
-    if (pprop in model.props)==False: return # no such key  
+    model = store.models[pmodelid]
 
-    if (pprop in model.wires)==False: # cretae a dict for the prop if there is none
-      model.wires[pprop] = {}
+    if (pprop in model.props) == False:
+        return  # no such key
 
-    if (pprop in model.wires)==True:
-      model.wires[pprop][consumer] = ''
+    if (pprop in model.wires) == False:  # cretae a dict for the prop if there is none
+        model.wires[pprop] = {}
 
-    for shadowlistenerid in store.shadowlisteners: # propagate to shadow listeners
-        send(shadowlistenerid,'sawl',producer,consumer)  
+    if (pprop in model.wires) == True:
+        model.wires[pprop][consumer] = ''
 
-    send(cnodeid,'udm',cnodeid,cmodelid,cprop,model.props[pprop]) # propagate the value to the property listener
+    for shadowlistenerid in store.shadowlisteners:  # propagate to shadow listeners
+        send(shadowlistenerid, 'sawl', producer, consumer)
+
+    # propagate the value to the property listener
+    send(cnodeid, 'udm', cnodeid, cmodelid, cprop, model.props[pprop])
 
     # save the store state to non-volatile memory, so the wire state is remembered
     store.serialize()
 
-## remove wire listener
-# producer string uri of the producer property
-# consumer string uri of the consumer property
-def removewirelistener(producer,consumer):
 
-    pnodeid,pmodelid,pprop = tuple(producer.split('/'))
+def removewirelistener(producer, consumer):
+    """removes wire listener, updates/notifies shadow listeners"""
+    pnodeid, pmodelid, pprop = tuple(producer.split('/'))
     # cnodeid,cmodelid,cprop = tuple(consumer.split('/'))
 
-    if (pmodelid in store.models)==False: return # no such model
+    if (pmodelid in store.models) == False:
+        return  # no such model
 
-    model = store.models[pmodelid]  
+    model = store.models[pmodelid]
 
-    if (pprop in model.props)==False: return # no such key  
+    if (pprop in model.props) == False:
+        return  # no such key
 
-    if (pprop in model.wires)==False: return # no such wire
+    if (pprop in model.wires) == False:
+        return  # no such wire
 
-    if (pprop in model.wires)==True:
-      if (consumer in model.wires[pprop])==True:
-        del model.wires[pprop][consumer]
+    if (pprop in model.wires) == True:
+        if (consumer in model.wires[pprop]) == True:
+            del model.wires[pprop][consumer]
 
-    for shadowlistenerid in store.shadowlisteners: # propagate to shadow listeners
-        send(shadowlistenerid,'srwl',producer,consumer)  
-    
+    for shadowlistenerid in store.shadowlisteners:  # propagate to shadow listeners
+        send(shadowlistenerid, 'srwl', producer, consumer)
+
     # save the store state to non-volatile memory, so the wire state is remembered
     store.serialize()
 
-## add shadow listener, to be notified when a model updates 
-# listenerdata table shadoe lisener nodeid
-# shadowlisteners table
-# models table
-def addshadowlistener(listenernodeid ):
-    store.shadowlisteners[listenernodeid] = True # register the shadow listener
+
+def addshadowlistener(listenernodeid):
+    """request to a remote node, so add self as a shadow listener"""
+    # register the shadow listener
+    store.shadowlisteners[listenernodeid] = True
     models = {}
     for modelid in store.models:
-      models[modelid] = (store.models[modelid]).toDict()    
-    send(listenernodeid,'ash',store.nodeid,models) # notify the listener the current models
+        models[modelid] = (store.models[modelid]).toDict()
+    # notify the listener the current models
+    send(listenernodeid, 'ash', store.nodeid, models)
 
-## removeshadowlistener
-# listenerdata table shadoe lisener nodeid
-# shadowlisteners table
-# models table
-def removeshadowlistener(listenernodeid ):
+
+def removeshadowlistener(listenernodeid):
+    """request to a remote node, so remove self as a shadow listener"""
     if listenernodeid in store.shadowlisteners:
-        del store.shadowlisteners[listenernodeid] # unregister the shadow listener
-        send('rsh',[store.nodeid],listenernodeid) # notify the listener the current models
+        # unregister the shadow listener
+        del store.shadowlisteners[listenernodeid]
+        # notify the listener the current models
+        send('rsh', [store.nodeid], listenernodeid)
 
 
 """ from here on master node only """
 
-## add descrption, of a discovered Product 
-# @param descritpion dictionary decribing a Product
-# @param nodeid nodekey of the Product
-def adddescription(description,nodeid):  
+
+def adddescription(nodeid, description):
+    """add descrption, of a discovered Product"""
     store.discovered[nodeid] = description
-    store.emit('adddescription',description,nodeid)
+    store.emit('adddescription', description, nodeid)
 
-## add shadow of a Product
-# @param nodeid string identifier of the Product being shadowed
-# @param shadow dict of the shadowed Product
-def addshadow(nodeid, shadow ):
+
+def addshadow(nodeid, shadow):
+    """adds a shadow of a node, emits an event"""
     store.shadows[nodeid] = shadow          # register the shadowin shadows
-    store.emit('addshadow',shadow,store.shadows) # shadow emits a shadow and shadows
+    # shadow emits a shadow and shadows
+    store.emit('addshadow', shadow, store.shadows)
 
-## remove shadow of a Product
-# @param shadownodeid string Product identifier
-def removeshadow(shadownodeid ):
+
+def removeshadow(shadownodeid):
+    """removes a shadow of a node, emits an event"""
     del store.shadows[shadownodeid]  # unregister the shadowin shadows
-    store.emit('removeshadow',shadownodeid,store.shadows) # shadow emits a shadow and shadows
-  
-## update shadow model
-# @param nodeid string
-# @param modelid number
-# @param prop string
-# @param value any
-def updateshadowmodel(nodeid,modelid,prop,value):
-    if (nodeid in store.shadows)==False: return # unknown shadow
+    # shadow emits a shadow and shadows
+    store.emit('removeshadow', shadownodeid, store.shadows)
+
+
+def updateshadowmodel(nodeid, modelid, prop, value):
+    """notifies shadow listeners of an model property change"""
+    if (nodeid in store.shadows) == False:
+        return  # unknown shadow
     shadow = store.shadows[nodeid]
-    if (modelid in shadow)==False: return # unknow shadowmodel
+    if (modelid in shadow) == False:
+        return  # unknow shadowmodel
     shadowmodel = shadow[modelid]
 
-    shadowmodel['props'][prop] = value #update the value #TODO Check that the reference structure is correct
+    # update the value #TODO Check that the reference structure is correct
+    shadowmodel['props'][prop] = value
 
-    store.emit('updateshadowmodel',prop,value,shadowmodel) # shadow emits a key, value ,model
+    # shadow emits a key, value ,model
+    store.emit('updateshadowmodel', prop, value, shadowmodel)
 
 
-## shadow add wire listener, updates shadow state from orign model state
-# producer string uri of the producer property
-# consumer string uri of the consumer property
-def shadowaddwirelistener(producer,consumer ):
+def shadowaddwirelistener(producer, consumer):
+    """shadow add wire listener, updates shadow state from orign model state"""
+    nodeid, modelid, prop = tuple(producer.split('/'))
 
-    nodeid,modelid,prop = tuple(producer.split('/'))
-
-    if (nodeid in store.shadows)==False: return # no such shadow
-
-    shadow = store.shadows[nodeid]
-
-    if (modelid in shadow)==False: return # no such shadowmodel
-      
-    shadowmodel = shadow[modelid] 
-
-    if (prop in shadowmodel['props'])==False: return # no such property
-
-    if (prop in shadowmodel['wires'])==False: # create a wire disctioniary if needed
-      shadowmodel['wires'][prop] = {}
-
-    if (prop in shadowmodel['wires'])==True:    
-      shadowmodel['wires'][prop][consumer] = '' # create a wire to the consumer
-
-    store.emit('shadowaddwire',producer,consumer)
-
-## shadow remove wire listener, updates shadow state from orign model state
-# producer string uri of the producer property
-# consumer string uri of the consumer property
-def shadowremovewirelistener(producer,consumer ):
-
-    nodeid,modelid,prop = tuple(producer.split('/'))
-
-    if (nodeid in store.shadows)==False: return # no such shadow
+    if (nodeid in store.shadows) == False:
+        return  # no such shadow
 
     shadow = store.shadows[nodeid]
 
-    if (modelid in shadow)==False: return # no such shadowmodel
-      
-    shadowmodel = shadow[modelid] 
+    if (modelid in shadow) == False:
+        return  # no such shadowmodel
 
-    if (prop in shadowmodel['wires'])==False: return # no such proprty
-    
-    if (consumer in shadowmodel['wires'][prop]) == False: return
-      
+    shadowmodel = shadow[modelid]
+
+    if (prop in shadowmodel['props']) == False:
+        return  # no such property
+
+    # create a wire disctioniary if needed
+    if (prop in shadowmodel['wires']) == False:
+        shadowmodel['wires'][prop] = {}
+
+    if (prop in shadowmodel['wires']) == True:
+        # create a wire to the consumer
+        shadowmodel['wires'][prop][consumer] = ''
+
+    store.emit('shadowaddwire', producer, consumer)
+
+
+def shadowremovewirelistener(producer, consumer):
+    """shadow remove wire listener, updates shadow state from orign model state"""
+    nodeid, modelid, prop = tuple(producer.split('/'))
+
+    if (nodeid in store.shadows) == False:
+        return  # no such shadow
+
+    shadow = store.shadows[nodeid]
+
+    if (modelid in shadow) == False:
+        return  # no such shadowmodel
+
+    shadowmodel = shadow[modelid]
+
+    if (prop in shadowmodel['wires']) == False:
+        return  # no such proprty
+
+    if (consumer in shadowmodel['wires'][prop]) == False:
+        return
+
     del shadowmodel['wires'][prop][consumer]  # remove wire to the consumer
 
-    store.emit('shadowremovewire',producer,consumer)
+    store.emit('shadowremovewire', producer, consumer)
 
-## shadow add model, updates shadow state from orign model state
-# model dictionary of the model state
+
 def shadowaddmodel(model):
-
+    """shadow add model, updates shadow state from orign model state"""
     nodeid = model['nodeid']
     modelid = model['id']
 
-    if (nodeid in store.shadows)==False: return # no such shadow
+    if (nodeid in store.shadows) == False:
+        return  # no such shadow
 
-    shadow = store.shadows[nodeid]  
+    shadow = store.shadows[nodeid]
 
-    shadow[modelid] = model #assign the shadowmodel
+    shadow[modelid] = model  # assign the shadowmodel
 
-    store.emit('shadowaddmodel',shadow,model)
+    store.emit('shadowaddmodel', shadow, model)
 
 
-## shadow remove model, updates shadow state from orign model state
-# nodeid string
-# modelid string
-def shadowremovemodel(nodeid,modelid ):
-    
-    if (nodeid in store.shadows)==False: return # no such shadow
-      
-    shadow = store.shadows[nodeid]  
+def shadowremovemodel(nodeid, modelid):
+    """shadow remove model, updates shadow state from orign model state"""
+    if (nodeid in store.shadows) == False:
+        return  # no such shadow
 
-    if (modelid in shadow)==False: return # no such shadowmodel
+    shadow = store.shadows[nodeid]
 
-    del  store.shadows[nodeid][modelid]  # delete the shadow model
-    
-    store.emit('shadowremovemodel',nodeid,modelid)
+    if (modelid in shadow) == False:
+        return  # no such shadowmodel
 
+    del store.shadows[nodeid][modelid]  # delete the shadow model
+
+    store.emit('shadowremovemodel', nodeid, modelid)

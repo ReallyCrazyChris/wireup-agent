@@ -45,6 +45,17 @@ class Model():
     def stop(self):
         pass
 
-
+    # TODO is this for serialization ?
+    def toDict(self):
+        return {
+            'clazz': self.clazz,
+            'type': self.type,
+            'id': self.id,
+            'nodeid': self.nodeid,
+            # 'eventlisteners' : self.eventlisteners,
+            'wires': self.wires,
+            'meta': self.meta,
+            'props': self.props
+        }
 
     

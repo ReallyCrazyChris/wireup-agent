@@ -16,6 +16,7 @@ class Store():
     self.models = {}
     self.shadowlisteners = {}
     self.discovered = {}
+    self.shadows = {}
 
   #EVENT
   #on - adds an event callback
@@ -35,4 +36,7 @@ class Store():
     if ('*' in self.ev) == True:    
       for callback in self.ev['*']:
         callback(*args)
-    
+  
+
+  def serialize(self):
+      pass
