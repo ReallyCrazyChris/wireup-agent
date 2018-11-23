@@ -45,18 +45,14 @@ class Model():
     def stop(self):
         pass
 
-    def toDescription(self):
-        raise NotImplementedError  # you want to override this on the child classes
+    def propvalue(self,name,value=None):
+        """ retreives a propvalue by prop name"""
+        if not value == None:
+            self.props[name] = value
+        return self.props[name]
 
-    # TODO is this for serialization ?
-    def toDict(self):
-        return {
-            'clazz': self.clazz,
-            'type': self.type,
-            'id': self.id,
-            'nodeid': self.nodeid,
-            # 'eventlisteners' : self.eventlisteners,
-            'wires': self.wires,
-            'meta': self.meta,
-            'props': self.props
-        }
+    def proptype(self,name):
+        """ retrives a prop type by prop name """
+        return self.meta[name].type
+
+    

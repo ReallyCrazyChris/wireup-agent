@@ -16,7 +16,7 @@ class Store():
     self.models = {}
     self.shadowlisteners = {}
     self.discovered = {}
-    self.shadows = {}
+    self.twins = {}
 
 
   #EVENT
@@ -39,24 +39,35 @@ class Store():
         callback(*args)
     
 
-  ## toDic converts the Store to a dictionary
-  def toDict(self):
-    
-    models = {}
+  def model(self, modelid):
+      """ retrives a model by modelid """  
+      return self.models[modelid]
 
-    for modelid in self.models:
-      models[modelid] = self.models[modelid].toDict()
+  def addmodel(self, model):
 
-    return {
-      'nodeid':self.nodeid,
-      'models':models,
-      'shadowlisteners':self.shadowlisteners,
-      'discovered':self.discovered,
-      'shadows':self.shadows,
-      #'bricks': bricks() # dictionary of installed bricks
-    }
+      model.start() # lifecycle start
 
-    
-  # save the store state to non-volatile memory, so the state is remembered
-  def serialize( self ):
-    pass
+  def removemodel(self, modelud):
+      """ removes a model from the store """
+      pass
+
+  def injectmodleid(self, model):
+      """ gives a model its id """
+      if model.id == False: # provide an id if the model has none
+          self.pointer +=1
+          model.id = str(self.pointer)   #model.id is a string
+          model.nodeid = nodekey     # provide the model with a nodeid
+
+  def twin(self, nodeid):
+      """ retrives a twin by id """
+
+  def addtwin(self, twin):
+      """adds a model to the store"""
+      pass
+
+  def removetwin(self, nodeid):
+      """ removes a model from the store """
+      pass
+
+
+

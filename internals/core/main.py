@@ -1,6 +1,5 @@
 from product import Product
-from mutations import addmodel
-from actions import announce
+from mutations import addmodel, announce
 from runner import listen
 
 product = Product()

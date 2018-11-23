@@ -45,6 +45,11 @@ def receiveudp (sock):
             print('receiveudp', bytes_, len(bytes_))
       
             packets = bdecode(bytes_)
+
+            #packet = [fro,to,command,arg1,arg2,...]
+      
+            fro = packet.pop(0)
+
             if packets == False: return 
     
             to = packets.pop()   #  pop off to nodeid value

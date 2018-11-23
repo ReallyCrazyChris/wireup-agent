@@ -10,22 +10,18 @@ store = Store() #singelton
 # @param store refence to store
 # @param model subclass object of Model
 def addmodel(model):
+  
+    if model.id in self.models:  return # model exists
 
-    if (model.id in store.models) == True: return # model exists
-      
-    if model.id == False: # provide an id if the model has none
-       store.pointer +=1
-    model.id = str(store.pointer)        #model.id is a string
-    model.nodeid = store.nodeid  # provide the model with a nodeid
-    
-    store.models[model.id] = model
+    self.injectmodleid(model)
 
-    model.start() # lifecycle start
+    self.models[model.id] = model
 
     for shadowlistenerid in store.shadowlisteners: # propagate to shadow listeners
       send('sam',[model.toDict()],shadowlistenerid)
 
 def removemodel(modelid):
+
     if (modelid in store.models) == False: return # model does'nt exists  
     model = store.models[modelid]
     model.stop()
@@ -40,55 +36,34 @@ def addbrick(brickname):
     #addmodel(brickinstance)
     pass
 
-## updatemodel update model
-# @param modelid integer
-# @param prop string
-# @param value any
-# @param s store reference
-def updatemodel(nodeid,modelid,prop,value,salt=None):
+def updatemodel(modelid, prop, value, salt=None):
+    """ updates a models propery, notify's dital twins, and wire listeners """
 
-    if (nodeid == store.nodeid) == False: return #unknown store
-    if (modelid in store.models) == False: return # unknowm model
-    model = store.models[modelid]
-    if (prop in model.props) == False: return #unknown prop
-    
-    # TODO reduce the size of the salt  
-    if salt == model.nodeid+modelid+prop: return # circular race condition detected
-    salt = salt or model.nodeid+modelid+prop # detect future reace condition by setting salt
- 
-    proptype = model.meta[prop]['type']
+    model = store.model(modelid)
 
-    coercedvalue = coerce(value,proptype) # coerces the value to the property type
+    newvalue = coerce(value, model.proptype(prop) )
 
-    if model.props[prop] == coercedvalue: return # no change to the value
+    if newvalue == model.propvalue(prop): return
 
-    model.props[prop] = coercedvalue # assigns the new value
+    model.propvalue(prop,newvalue)
 
-    model.emit(prop, model, prop, model.props[prop]) # emit a property value change event
+    model.emit(prop, model, prop, newvalue)
 
-    # propagate to shadow models
-    for shadownodeid in store.shadowlisteners:
-      send('udsm',[model.nodeid,model.id,prop,coercedvalue],shadownodeid)
+    for twin in store.twins:
+        send(twin, 'updatetwin', modelid, prop, newvalue)
 
-    if (prop in model.wires)==False: return # any wire listeners for prop      
-    
-    wirelisteners = model.wires[prop]
-    # propagate the value to the wire listeners
-    for listeneruri in wirelisteners:
-        listenernodeid,listnermodlid,listenerprop = tuple(listeneruri.split('/'))
-        send('udm',[listenernodeid,listnermodlid,listenerprop,coercedvalue,salt],listenernodeid)
+    for listener,modelid,prop in model.wirelisteners(prop): # listener = (nodeid,modelid,prop)
+        send(listener,'udm',modelid,prop,salt)
+
+
 
 ## add wire listener, to be nitified when a model property changes
 # producer string uri of the producer property
 # consumer string uri of the consumer property
 def addwirelistener(producer,consumer):
 
-    pnodeid,pmodelid,pprop = tuple(producer.split('/'))
-    cnodeid,cmodelid,cprop = tuple(consumer.split('/'))
+    model = store.model(producer[1])
 
-    if (pmodelid in store.models)==False: return # no such model
-
-    model = store.models[pmodelid]  
 
     if (pprop in model.props)==False: return # no such key  
 
@@ -97,6 +72,10 @@ def addwirelistener(producer,consumer):
 
     if (pprop in model.wires)==True:
       model.wires[pprop][consumer] = ''
+
+
+    for twin in store.twins:
+        send(twin, 'twinaddwirelistener', modelid, prop, newvalue)
 
     for shadowlistenerid in store.shadowlisteners: # propagate to shadow listeners
       send('sawl',[producer,consumer],shadowlistenerid)  
