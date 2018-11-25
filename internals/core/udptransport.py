@@ -27,7 +27,7 @@ def getsocket(ip):
 
     # register as a multicast listener with the router.
     mreq=aton(multiaddr) + aton(ip)
-    print('mreq',multiaddr,ip,mreq)
+    # print('mreq',multiaddr,ip,mreq)
     sock.setsockopt(socket.IPPROTO_IP, socket.IP_ADD_MEMBERSHIP, mreq)    # Register as a muticast receiver 
     #sock.setblocking(False)
     sock.settimeout(0.0001)
@@ -36,22 +36,19 @@ def getsocket(ip):
 def receiveudp (sock):
     """ receives datagram messages and queues them for processing, updates a routing table """
     try:
-        data, address = sock.recvfrom(2048) # Buffer size is 2048. Change as needed.
+        bytedata, address = sock.recvfrom(2048) # Buffer size is 2048. Change as needed.
     except Exception:
         pass
         # exceptions will be continoulsy thrown due to the non-blocking of recivefrom
     else:
-        if data:
-            # print('receiveudp', data, len(data))
+        if bytedata:
+            # print('receiveudp', bytedata, len(bytedata))
       
-            packet = bdecode(data)
+            packet = bdecode(bytedata)
 
             if packet == False: return 
-    
-            print('receive', packet)
-
-            #to = packet.pop()   #  pop off to nodeid value
-            #fro = packet.pop()  #  pop off from nodeid value
+            #print('receiveudp', packet)
+            
             fro = packet[0]
             if fro:
                 rt[fro] = (address[0],address[1])  # update the routing table
@@ -63,16 +60,12 @@ def sendudp (sock):
     for packet in sendqueue:
 
             nodeid = packet[1]
-            data = bencode(packet)
-            #print('sendudp',data)
+            bytedata = bencode(packet)
             if nodeid == 0 : #  multicast
-                print(sock.sendto(data, (multiaddr,port)) ,len(data))
-            
+                sock.sendto(bytedata, (multiaddr,port))
             elif (nodeid in rt)==True : #  unicast 
-                #print(sock.sendto(data, (multiaddr,port)) ,len(data))
-                print(sock.sendto(data, rt[nodeid]), len(data))
+                sock.sendto(bytedata, rt[nodeid])
             else:
                 print('destination unknown for', nodeid)
-                print('multicasting...') 
-                print(sock.sendto(data, (multiaddr,port)) ,len(data))
+                sock.sendto(bytedata, (multiaddr,port))
     sendqueue.clear()

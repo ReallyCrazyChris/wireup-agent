@@ -1,6 +1,6 @@
 from config import ip
 from SimpleWebSocketServer import SimpleWebSocketServer, WebSocket
-from reactor import receive
+from actor import doaction
 from bencode import bencode, bdecode
 from store import Store 
 
@@ -15,19 +15,16 @@ def updateAllClients(websocketserver,store):
 class WssHandler(WebSocket):
 
     def handleMessage(self):
-        
         action = bdecode( self.data )
-        print(action)
-        receive(action)
+        doaction(action)
             
     def handleConnected(self):
-        #print(self.address, 'connected')
+        print(self.address, 'connected')
         msg = bencode(['update',store.toDict()])
         self.sendMessage(msg)
 
     def handleClose(self):
-        pass
-        #print(self.address, 'closed')
+        print(self.address, 'closed')
 
 def getwebsocket():
     websocketserver = SimpleWebSocketServer(ip, 9090, WssHandler)   
