@@ -6,10 +6,17 @@ from store import Store
 
 store = Store()
 
+
+def storeData():
+    return {
+            'discovered':store.discovered, 
+            'shadows':store.shadows
+    }
+
 def updateAllClients(websocketserver,store):
     for fileno in websocketserver.connections:
         connection = websocketserver.connections[fileno]
-        msg = bencode(['update',store.toDict()])
+        msg = bencode(['update',storeData()])
         connection.sendMessage(msg)
 
 class WssHandler(WebSocket):
@@ -20,7 +27,7 @@ class WssHandler(WebSocket):
             
     def handleConnected(self):
         print(self.address, 'connected')
-        msg = bencode(['update',store.toDict()])
+        msg = bencode(['update',storeData()])
         self.sendMessage(msg)
 
     def handleClose(self):

@@ -29,8 +29,8 @@ def getsocket(ip):
     mreq=aton(multiaddr) + aton(ip)
     # print('mreq',multiaddr,ip,mreq)
     sock.setsockopt(socket.IPPROTO_IP, socket.IP_ADD_MEMBERSHIP, mreq)    # Register as a muticast receiver 
-    #sock.setblocking(False)
-    sock.settimeout(0.0001)
+    sock.setblocking(False)
+    #sock.settimeout(0.0001)
     return sock
 
 def receiveudp (sock):
@@ -42,8 +42,8 @@ def receiveudp (sock):
         # exceptions will be continoulsy thrown due to the non-blocking of recivefrom
     else:
         if bytedata:
-            # print('receiveudp', bytedata, len(bytedata))
-      
+
+            print('receiveudp', bytedata, len(bytedata))
             packet = bdecode(bytedata)
 
             if packet == False: return 
@@ -61,6 +61,8 @@ def sendudp (sock):
 
             nodeid = packet[1]
             bytedata = bencode(packet)
+            print('sendudp', bytedata, len(bytedata))
+            
             if nodeid == 0 : #  multicast
                 sock.sendto(bytedata, (multiaddr,port))
             elif (nodeid in rt)==True : #  unicast 
