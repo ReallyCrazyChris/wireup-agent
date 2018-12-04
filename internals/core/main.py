@@ -1,14 +1,16 @@
+from reactor import addmodel, announce, react
+
 try:
     import asyncio
     from wstransport import getwebsocket            
-except (ModuleNotFoundError, ImportError):
+except (ImportError):
     import uasyncio as asyncio   
     from wifi import joinwifi    
   
 
 from config import ip
 from product import Product
-from reactor import addmodel, announce, react
+
 from udptransport import getsocket, receiveudp, sendudp
 
 

@@ -1,4 +1,4 @@
-#from mutations import updatemodel
+from reactor import updatemodel
 class Model():
 
     # Constructor
@@ -33,8 +33,8 @@ class Model():
                 callback(*args)
 
     def commit(self, prop, value):
-        #updatemodel(self.nodeid,self.nodeid,'',self.id, prop, value)
-        pass
+        updatemodel(self.nodeid,self.nodeid,'updatemodel',self.id, prop, value)
+        
         
     # lifecycle start method
     def start(self):
