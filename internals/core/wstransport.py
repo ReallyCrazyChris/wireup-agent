@@ -6,17 +6,17 @@ from store import Store
 
 store = Store()
 
-
 def storeData():
     return {
-            'discovered':store.discovered, 
-            'shadows':store.shadows
+        'discovered':store.discovered, 
+        'shadows':store.shadows
     }
 
 def updateAllClients(websocketserver,store):
     for fileno in websocketserver.connections:
         connection = websocketserver.connections[fileno]
         msg = bencode(['update',storeData()])
+        # print(len(msg))
         connection.sendMessage(msg)
 
 class WssHandler(WebSocket):
