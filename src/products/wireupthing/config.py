@@ -2,13 +2,9 @@
 ssid = "SummerTime"
 passwd = "Calmhat436"
 # address of the network adapter to use
-ip = '192.168.2.107'
+ip = '10.81.92.177'
 # securiy keys
 privatekey = "security to be implemented"
-publickey  = "security to be implemented"
-# hash of the public key forms the identifier of the product
-nodekey    = "wemosbutton"
-
-
-
-
+publickey = "security to be implemented"
+# hash of the public key
+nodekey = "vandiervcqhgwmg"

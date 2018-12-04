@@ -18,7 +18,6 @@ class Store():
     self.discovered = {}
     self.shadows = {}
 
-
   #EVENT
   #on - adds an event callback
   # @param n string event name
@@ -37,26 +36,24 @@ class Store():
     if ('*' in self.ev) == True:    
       for callback in self.ev['*']:
         callback(*args)
-    
+  
+  
+  def serialize(self):
+      pass
 
-  ## toDic converts the Store to a dictionary
+  # TODO currenlty only used by wstrasnport ... reduce memeory footprint
   def toDict(self):
-    
-    models = {}
+      """converts the Store to a dictionary"""
+      models = {}
 
-    for modelid in self.models:
-      models[modelid] = self.models[modelid].toDict()
+      for modelid in self.models:
+        models[modelid] = self.models[modelid].toDict()
 
-    return {
-      'nodeid':self.nodeid,
-      'models':models,
-      'shadowlisteners':self.shadowlisteners,
-      'discovered':self.discovered,
-      'shadows':self.shadows,
-      #'bricks': bricks() # dictionary of installed bricks
-    }
-
-    
-  # save the store state to non-volatile memory, so the state is remembered
-  def serialize( self ):
-    pass
+      return {
+        'nodeid':self.nodeid,
+        'models':models,
+        'shadowlisteners':self.shadowlisteners,
+        'discovered':self.discovered,
+        'shadows':self.shadows,
+        #'bricks': bricks() # dictionary of installed bricks
+      }      

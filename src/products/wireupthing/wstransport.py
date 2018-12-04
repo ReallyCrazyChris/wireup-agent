@@ -1,32 +1,37 @@
 from config import ip
 from SimpleWebSocketServer import SimpleWebSocketServer, WebSocket
-from reactor import reactQueueAppend
+from actor import doaction
 from bencode import bencode, bdecode
 from store import Store 
 
 store = Store()
 
+def storeData():
+    return {
+        'discovered':store.discovered, 
+        'shadows':store.shadows
+    }
+
 def updateAllClients(websocketserver,store):
     for fileno in websocketserver.connections:
         connection = websocketserver.connections[fileno]
-        msg = bencode(['update',store.toDict()])
+        msg = bencode(['update',storeData()])
+        # print(len(msg))
         connection.sendMessage(msg)
 
 class WssHandler(WebSocket):
 
     def handleMessage(self):
-        # print(self.address, self.data)
         action = bdecode( self.data )
-        reactQueueAppend(action)
+        doaction(action)
             
     def handleConnected(self):
-        #print(self.address, 'connected')
-        msg = bencode(['update',store.toDict()])
+        print(self.address, 'connected')
+        msg = bencode(['update',storeData()])
         self.sendMessage(msg)
 
     def handleClose(self):
-        pass
-        #print(self.address, 'closed')
+        print(self.address, 'closed')
 
 def getwebsocket():
     websocketserver = SimpleWebSocketServer(ip, 9090, WssHandler)   

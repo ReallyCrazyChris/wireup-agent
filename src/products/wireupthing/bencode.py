@@ -1,9 +1,10 @@
 class BTFailure(Exception):
     pass
 
+
 def decode_int(x, f):
     f += 1
-    newf = x.index(bytes("e","utf-8"), f)
+    newf = x.index(bytes("e", "utf-8"), f)
     n = int(x[f:newf])
 
     if x[f] == ord("-"):
@@ -15,12 +16,13 @@ def decode_int(x, f):
 
     return (n, newf + 1)
 
+
 def decode_bool(x, f):
     f += 1
-    newf = x.index(bytes("e","utf-8"), f)
+    newf = x.index(bytes("e", "utf-8"), f)
     n = int(x[f:newf])
 
-    if n == 1: 
+    if n == 1:
         n = True
     else:
         n = False
@@ -34,9 +36,10 @@ def decode_bool(x, f):
 
     return (n, newf + 1)
 
+
 def decode_bytes(x, f):
 
-    colon = x.index(bytes(":","utf-8"), f)
+    colon = x.index(bytes(":", "utf-8"), f)
     n = int(x[f:colon])
 
     if x[f] == ord("0") and colon != f + 1:
@@ -44,14 +47,14 @@ def decode_bytes(x, f):
 
     colon += 1
 
-    #return (x[colon:colon + n], colon + n)
-    rawbytes = x[colon:colon + n] 
+    # return (x[colon:colon + n], colon + n)
+    rawbytes = x[colon:colon + n]
     return (rawbytes.decode('utf-8'), colon + n)
 
 
 def decode_string(x, f):
     r, l = decode_bytes(x, f)
-    #return str(r, "utf-8"), l
+    # return str(r, "utf-8"), l
     return (r, l)
 
 
@@ -97,9 +100,9 @@ def bdecode(x):
     except (IndexError, KeyError, ValueError):
         return False
         #raise BTFailure("not a valid bencoded string")
-        
+
     if l != len(x):
-        pass    
+        pass
         raise BTFailure("invalid bencoded value (data after valid prefix)")
 
     return r
@@ -115,6 +118,7 @@ def encode_int(x):
 
     return result
 
+
 def encode_bool(x):
     result = bytearray()
 
@@ -129,14 +133,17 @@ def encode_bool(x):
 
     return result
 
+
 def encode_bytes(x):
     result = bytearray()
     result.extend(bytes("{}:".format(len(x)), "utf-8"))
     result.extend(x)
     return result
 
+
 def encode_string(x):
     return encode_bytes(bytes(x, "utf-8"))
+
 
 def encode_list(x):
     result = bytearray()
