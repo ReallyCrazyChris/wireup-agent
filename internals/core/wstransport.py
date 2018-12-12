@@ -2,14 +2,16 @@ from config import ip
 from SimpleWebSocketServer import SimpleWebSocketServer, WebSocket
 from actor import doaction
 from bencode import bencode, bdecode
-from store import Store 
+from store import Store
+from plugins.bricks import bricks 
 
 store = Store()
 
 def storeData():
     return {
         'discovered':store.discovered, 
-        'shadows':store.shadows
+        'shadows':store.shadows,
+        'bricks':bricks()
     }
 
 def updateAllClients(websocketserver,store):
@@ -23,6 +25,7 @@ class WssHandler(WebSocket):
 
     def handleMessage(self):
         action = bdecode( self.data )
+        print(self.data)
         doaction(action)
             
     def handleConnected(self):

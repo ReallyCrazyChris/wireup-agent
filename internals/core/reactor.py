@@ -2,6 +2,7 @@ from config import nodekey
 from typecoersion import coerce
 from bencode import bdecode, bencode
 from store import Store
+import importlib
 
 store = Store()  # get singleton of store
 sendqueue = []
@@ -173,10 +174,10 @@ def removeshadowlistener(fro, to, command, listenernodeid):
 
 
 def addbrick(fro, to, command, packagename):
-    """not yet implemented"""
-    #brickinstance = importlib.import_module('bricks.'+str( brickname ) ).Brick()
-    # addmodel(brickinstance)
-    pass
+    """creats an instance of a brick"""
+    plugin = importlib.import_module('plugins.'+str(packagename), '.')
+    instance = plugin.Brick()
+    addmodel(instance)
 
 
 def addmodel(model):
@@ -198,8 +199,9 @@ def addmodel(model):
 
 
 def removemodel(fro, to, command, modelid):
+    print('removemodel', fro, to, command, modelid)
     if (modelid in store.models) == False:
-        return  # model does'nt exists
+        return  # model does not exists
     model = store.models[modelid]
     model.stop()
 

@@ -18,7 +18,7 @@ class Brick(Model):
     }
 
     self.props = {
-      'imageurl':'https://www.cameolight.com/out/media/image/cameo_header_lighteffects.jpg',
+      'imageurl':'assets/wireup-logo.png',
       'name':'Logic AND',
       'description':'if inputA AND inputB then output',
       'inputA': False,
