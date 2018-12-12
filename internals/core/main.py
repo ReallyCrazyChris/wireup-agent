@@ -26,17 +26,24 @@ async def websockTask(websock):
         websock.serveonce()
         await asyncio.sleep(0)
 
+async def heartbeatTask():
+    while 1:
+        await asyncio.sleep(10)
+        announce('','','')
+
 def listen():
 
     loop = asyncio.get_event_loop()
 
     try:# to join a wfinetwork (micropython)
         sock = getsocket(joinwifi())
-        loop.create_task( mainTask(sock) )  
+        loop.create_task( mainTask(sock) )
+        loop.create_task( heartbeatTask() )  
     except Exception:
         #cpython approach
         sock = getsocket(ip)
-        loop.create_task( mainTask(sock) )  
+        loop.create_task( mainTask(sock) )
+        loop.create_task( heartbeatTask() )   
 
     try:# to create a websocket
         websock = getwebsocket()
