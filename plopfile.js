@@ -77,8 +77,6 @@ const  selectfirmware_prompt = {
 }
 
 
-
-
 module.exports = function (plop) {
     // WireUP product 
     
@@ -119,7 +117,6 @@ module.exports = function (plop) {
             message: 'product description',
             default: 'an IoT device enabled by WireUP'
         },
-
         {   type: 'recursive',
             message: 'Add a property ?',
             name: 'meta',
@@ -218,8 +215,8 @@ module.exports = function (plop) {
                     type: 'list',
                     name: 'display',
                     message: 'Select the display type of the boolean property?',
-                    choices:['button','toggle','checkbox'],
-                    default:'button',
+                    choices:['state','button','toggle','checkbox'],
+                    default:'state',
                     when:function(answers){
                       return ['boolean']
                       .includes(answers.type)
@@ -311,6 +308,14 @@ module.exports = function (plop) {
             templateFile: 'internals/generators/product.py.hbs'
           });
 
+          // Generate driver.py
+          actions.push({
+            type: 'add',
+            force: true,
+            path: 'src/products/{{typename name}}/driver.py',
+            templateFile: 'internals/generators/driver.py.hbs'
+          });
+
           // Copy in other needed mcu files
           actions.push({
             type: 'addMany',
@@ -321,6 +326,7 @@ module.exports = function (plop) {
           });
 
           // Copy in other needed files
+          /** 
           actions.push({
             type: 'addMany',
             skipIfExists: true,
@@ -328,7 +334,7 @@ module.exports = function (plop) {
             templateFiles: 'internals/core/*.py',
             destination: 'src/products/{{typename name}}/'
           });
-
+          */
           return actions;
 
         }
@@ -383,7 +389,40 @@ module.exports = function (plop) {
   }
 )    
 
-plop.setGenerator('upload', {
+
+plop.setGenerator('upload_agent', {
+  description: 'upload the agent',
+  prompts: [
+    comport_prompt
+  ],
+  actions:function(answers){
+    var actions = [];
+
+    const filenames = []
+    
+    shell.ls('./internals/core/*.py').forEach(function (file) {
+      filenames.push(file)
+    })
+
+    process.stdout.write('\nuploading agent core')
+    
+    filenames.forEach((filename) => {
+      process.stdout.write('\n'+filename)
+        if (shell.exec(
+          'ampy -p '+answers.comport+' -b 115200 put '+filename
+        ).code !== 0) {
+          shell.echo('\nError: could not upload file', filename);
+          shell.exit(1);
+        }
+    })
+
+    return actions
+  }
+}
+)
+
+
+plop.setGenerator('upload_product', {
   description: 'upload a product',
   prompts: [
     selectproductfolder_prompt,

@@ -7,7 +7,7 @@ class Product(Model):
       super(Product, self).__init__()
     
       self.clazz='Product'
-      self.type = '{{typename name}}'
+      self.type = 'ilike'
       self.version = '0.0.1'
 
       self.meta = {
@@ -15,43 +15,41 @@ class Product(Model):
         'company'     :{'index':1, 'type':'string', 'display':'text',   'group':'info', 'label':'Company'},
         'name'        :{'index':2, 'type':'string', 'display':'text',   'group':'info', 'label':'Name'},
         'description' :{'index':3, 'type':'string', 'display':'text',   'group':'info', 'label':'Description'}, 
-        {{#each meta}}
-        '{{typename name}}':{'index':{{indexadjust @index}}, 'type':'{{typename type}}', 'display':'{{display}}', 'group':'{{group}}', 'label':'{{label}}'{{#if units}}, 'units':'{{units}}'{{/if}} },
-        {{/each}} 
+        'push':{'index':4, 'type':'boolean', 'display':'state', 'group':'control', 'label':'Push' },
+        'sayilike':{'index':5, 'type':'boolean', 'display':'button', 'group':'control', 'label':'Say I Like' },
       }
 
       self.props = {
         'imageurl':'https://www.cameolight.com/out/media/image/cameo_header_lighteffects.jpg',
-        'company':'{{company}}',
-        'name':'{{name}}',
-        'description':'{{description}}',
-        {{#each meta}}
-        '{{typename name}}': {{{stringAssist value}}},
-        {{/each}}
+        'company':'CRUSIUS',
+        'name':'I Like',
+        'description':'a IoT enabled button',
+        'push': False,
+        'sayilike': False,
       }
 
   def start(self):
-      print('starting product {{company}} {{name}}')
+      print('starting product CRUSIUS I Like')
       startdriver(self)
 
-      {{#each meta}}
-      # {{typename name}} change event handler
-      # self.on('{{typename name}}',lambda product, prop, value : print('{{typename name}} event',product.id, prop, value))
-      {{/each}}  
+      # push change event handler
+      self.on('push',lambda product, prop, value : print('push event',product.id, prop, value))
+      # sayilike change event handler
+      self.on('sayilike',lambda product, prop, value : print('sayilike event',product.id, prop, value))
 
   def stop(self):
-      print('stopping product {{company}} {{name}}')
+      print('stopping product CRUSIUS I Like')
       stopdriver(self)
       
-      {{#each meta}}
-      self.commit('{{typename name}}', {{{stringAssist value}}})
-      {{/each}}
+      self.commit('push', False)
+      self.commit('sayilike', False)
 
-  {{#each meta}}
-  def {{typename name}}Handler(self, product, prop, value):
+  def pushHandler(self, product, prop, value):
       print('property {} set to new value {}'.format(prop, value))
-      # self.commit('{{typename name}}', {{{stringAssist value}}})
-  {{/each}}   
+      # self.commit('push', False)
+  def sayilikeHandler(self, product, prop, value):
+      print('property {} set to new value {}'.format(prop, value))
+      # self.commit('sayilike', False)
       
   def toDescription(self):
       return [self.clazz,self.type,self.props['imageurl'],self.props['company'],self.props['name'],self.props['description']]

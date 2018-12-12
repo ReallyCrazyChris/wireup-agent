@@ -25,8 +25,8 @@ class Product(Model):
     self.props = {
       'imageurl':'https://www.cameolight.com/out/media/image/cameo_header_lighteffects.jpg',
       'company':'WEMOS',
-      'name':'Thing',
-      'description':'IOT enabled thing',
+      'name':'OneButton',
+      'description':'an IoT enabled Button',
       #'volume':100,
       'power':False,
       #'reset':False,

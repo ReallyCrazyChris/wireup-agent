@@ -1,0 +1,38 @@
+import uasyncio as asyncio
+from typecoersion import coerce
+from machine import Pin
+
+# initialize hardware (uncomment as needed)
+{{#each meta}}
+#_{{typename name}} = Pin(0, Pin.IN)
+{{/each}}   
+
+def startdriver(product):
+    """ initialize and start the hardware driver as a daemon """
+
+    # listen for product events  (uncomment as needed)
+    {{#each meta}}
+    #product.on('{{typename name}}',lambda product, prop, value : 
+        #_{{typename name}}.value(coerce(value, '{{type}}')))
+    {{/each}}        
+
+    # add a pollTask ot the event loop
+    loop = asyncio.get_event_loop()
+    loop.create_task(pollTask(product))
+
+
+def stopdriver(product):
+    """ stop and finalize the hardware driver """
+    {{#each meta}}
+    #_{{typename name}}.value(0)
+    {{/each}}   
+
+
+async def pollTask(product):
+    """ asyncronously poll the hardware and commmit data to the product model """
+    while 1:
+        await asyncio.sleep(0.1)
+        {{#each meta}}
+        """ commit _{{typename name}} input to product property {{typename name}}"""
+        #product.commit('{{typename name}}',  _{{typename name}}.value())
+        {{/each}}
