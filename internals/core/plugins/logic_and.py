@@ -18,7 +18,7 @@ class Brick(Model):
     }
 
     self.props = {
-      'imageurl':'assets/wireup-logo.png',
+      'imageurl':'wireup-logo.png',
       'name':'Logic AND',
       'description':'if inputA AND inputB then output',
       'inputA': False,
