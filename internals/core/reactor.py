@@ -2,7 +2,6 @@ from config import nodekey
 from typecoersion import coerce
 from bencode import bdecode, bencode
 from store import Store
-import importlib
 
 store = Store()  # get singleton of store
 sendqueue = []
@@ -175,7 +174,8 @@ def removeshadowlistener(fro, to, command, listenernodeid):
 
 def addbrick(fro, to, command, packagename):
     """creats an instance of a brick"""
-    plugin = importlib.import_module('plugins.'+str(packagename), '.')
+    #plugin = importlib.import_module('plugins.'+str(packagename), '.')
+    plugin = __import__('plugins.'+str(packagename), fromlist=[None])
     instance = plugin.Brick()
     addmodel(instance)
 

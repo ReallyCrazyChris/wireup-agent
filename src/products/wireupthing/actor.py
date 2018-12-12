@@ -42,9 +42,9 @@ def unwire(producer, consumer):
     send(nodekey, nodeid, 'removewirelistener', producer, consumer)    
 
 
-def addbrick(nodeid,packagename):
+def addbrick(packagename):
     """add a brick to a remote node"""
-    send(nodekey, nodeid, 'addbrick', packagename)
+    send(nodekey, nodekey, 'addbrick', packagename)
 
 
 def removemodel(nodeid,modelid):
