@@ -7,14 +7,13 @@ def doaction(packet):
 
     if not packet[0] in actions:
         return  # not a known action
-    action = packet.pop(0)    
+    action = packet.pop(0)
     #print('doaction',action)
     actions[action](*packet)
 
 def discover(nodeid):
     """discovery of nodes onthe network by requesting other nodees to annouce-"""
     send(nodekey, nodeid or 0, 'announce')
-
 
 def updatemodel(nodeid, modelid, prop, value, salt='0'):
     """set a property value of a local or remote model"""
@@ -24,28 +23,23 @@ def shadow(nodeid):
     """shadow another node"""
     send(nodekey, nodeid, 'addshadowlistener', nodekey)
 
-
 def unshadow(nodeid):
     """unshadow another node"""
     send(nodekey, nodeid, 'removeshadowlistener', nodekey)
-
 
 def wire(producer, consumer):
     """ request this agent to create a wire with another agent """
     nodeid = producer.split('/')[0]
     send(nodekey, nodeid, 'addwirelistener', producer, consumer)
 
-
 def unwire(producer, consumer):
     """ request this agent to create a wire with another agent """
     nodeid = producer.split('/')[0]
-    send(nodekey, nodeid, 'removewirelistener', producer, consumer)    
-
+    send(nodekey, nodeid, 'removewirelistener', producer, consumer)
 
 def addbrick(packagename):
     """add a brick to a remote node"""
     send(nodekey, nodekey, 'addbrick', packagename)
-
 
 def removemodel(nodeid,modelid):
     """remove a brick to a remote node"""

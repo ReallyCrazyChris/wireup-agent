@@ -2,11 +2,11 @@ from reactor import addmodel, announce, react
 
 try:
     import asyncio
-    from wstransport import getwebsocket            
+    from wstransport import getwebsocket
 except (ImportError):
-    import uasyncio as asyncio   
-    from wifi import joinwifi    
-  
+    import uasyncio as asyncio
+    from wifi import joinwifi
+
 
 from config import ip
 from product import Product
@@ -14,7 +14,7 @@ from product import Product
 from udptransport import getsocket, receiveudp, sendudp
 
 
-async def mainTask(sock):
+async def reactTask(sock):
     while 1:
         receiveudp(sock)
         react()
@@ -31,29 +31,31 @@ async def heartbeatTask():
         await asyncio.sleep(10)
         announce('','','')
 
-def listen():
-
-    loop = asyncio.get_event_loop()
-
+async def main_task():
     try:# to join a wfinetwork (micropython)
         sock = getsocket(joinwifi())
-        loop.create_task( mainTask(sock) )
-        loop.create_task( heartbeatTask() )  
+        asyncio.create_task( reactTask(sock) )
+        asyncio.create_task( heartbeatTask() )
     except Exception:
         #cpython approach
         sock = getsocket(ip)
-        loop.create_task( mainTask(sock) )
-        loop.create_task( heartbeatTask() )   
+        asyncio.create_task( reactTask(sock) )
+        asyncio.create_task( heartbeatTask() )
 
     try:# to create a websocket
         websock = getwebsocket()
-        loop.create_task( websockTask(websock) )
+        asyncio.create_task( websockTask(websock) )
     except Exception:
         pass
 
-    loop.run_forever()
+    while 1:
+        await asyncio.sleep(60)
+        print('still alive')
 
-product = Product()
-addmodel(product)
-announce('','','')
-listen()
+if __name__ == "__main__":
+
+        print('WireUp Agent v0.1')
+        product = Product()
+        addmodel(product)
+        asyncio.run( main_task() )
+

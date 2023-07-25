@@ -3,13 +3,13 @@ from SimpleWebSocketServer import SimpleWebSocketServer, WebSocket
 from actor import doaction
 from bencode import bencode, bdecode
 from store import Store
-from plugins.bricks import bricks 
+from plugins.bricks import bricks
 
 store = Store()
 
 def storeData():
     return {
-        'discovered':store.discovered, 
+        'discovered':store.discovered,
         'shadows':store.shadows,
         'bricks':bricks()
     }
@@ -27,7 +27,7 @@ class WssHandler(WebSocket):
         action = bdecode( self.data )
         print(self.data)
         doaction(action)
-            
+
     def handleConnected(self):
         print(self.address, 'connected')
         msg = bencode(['update',storeData()])
@@ -37,8 +37,8 @@ class WssHandler(WebSocket):
         print(self.address, 'closed')
 
 def getwebsocket():
-    websocketserver = SimpleWebSocketServer(ip, 9090, WssHandler)   
+    websocketserver = SimpleWebSocketServer(ip, 9090, WssHandler)
     # register for all store events
-    store.on('*', lambda *args: updateAllClients(websocketserver,store))  
+    store.on('*', lambda *args: updateAllClients(websocketserver,store))
 
     return websocketserver
