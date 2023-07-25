@@ -37,6 +37,7 @@ class WssHandler(WebSocket):
         print(self.address, 'closed')
 
 def getwebsocket():
+    print('creating websockes server on',ip,':9090')
     websocketserver = SimpleWebSocketServer(ip, 9090, WssHandler)
     # register for all store events
     store.on('*', lambda *args: updateAllClients(websocketserver,store))

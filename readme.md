@@ -1,12 +1,10 @@
 # WireUP Agent for Python
 
-#install dependancies
-## Development
+# Install dependancies
 pip install esptool
 pip install adafruit-ampy
-
-## Prodiction
 pip install websockets
+yarn
 
 ## Run
-npm run dev
+yarn dev

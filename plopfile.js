@@ -1,7 +1,7 @@
 
 const inquirerRecursive = require('inquirer-recursive');
 const shell = require('shelljs');
-const SerialPort = require('serialport');
+const { SerialPort } = require('serialport')
 
 const confirmRerquiredSoftware = function(){
   if (!shell.which('esptool.py.exe')) {
@@ -21,14 +21,9 @@ const comport_prompt =  {
   message: 'specify the comport e.g dev/ttyUSB0 or COM1',
   choices:function(){
     const result = []
-    return new Promise((resolve, reject) => {
-      SerialPort.list(function (err, ports) {
-        ports.forEach(function(port) {
-          result.push(port.comName)
-        });
-        resolve(result);
-      });
-    });
+    return  SerialPort.list().then((portlist) => { portlist.forEach((portlist) => {result.push(portlist.path)}) }).then(() => result)
+
+
 
   }
 }
@@ -78,8 +73,8 @@ const  selectfirmware_prompt = {
 
 
 module.exports = function (plop) {
-    // WireUP product 
-    
+    // WireUP product
+
     confirmRerquiredSoftware()
 
     plop.setPrompt('recursive', inquirerRecursive);
@@ -95,6 +90,7 @@ module.exports = function (plop) {
               case 'string': return "'"+value+"'";
         }
     });
+
 
     plop.setGenerator('create', {
         description: ' the scafholding for a working product',
@@ -326,7 +322,7 @@ module.exports = function (plop) {
           });
 
           // Copy in other needed files
-          /** 
+          /**
           actions.push({
             type: 'addMany',
             skipIfExists: true,
@@ -387,7 +383,7 @@ module.exports = function (plop) {
       return actions
     }
   }
-)    
+)
 
 
 plop.setGenerator('upload_agent', {
@@ -399,17 +395,17 @@ plop.setGenerator('upload_agent', {
     var actions = [];
 
     const filenames = []
-    
+
     shell.ls('./internals/core/*.py').forEach(function (file) {
       filenames.push(file)
     })
 
     process.stdout.write('\nuploading agent core')
-    
+
     filenames.forEach((filename) => {
       process.stdout.write('\n'+filename)
         if (shell.exec(
-          'ampy -p '+answers.comport+' -b 115200 put '+filename
+          'ampy -p '+answers.comport+' -d 1 -b 115200 put '+filename
         ).code !== 0) {
           shell.echo('\nError: could not upload file', filename);
           shell.exit(1);
@@ -432,13 +428,13 @@ plop.setGenerator('upload_product', {
     var actions = [];
 
     const filenames = []
-    
+
     shell.ls('./src/products/'+answers.foldername).forEach(function (file) {
       filenames.push(file)
     })
 
     process.stdout.write('\nuploading')
-    
+
     filenames.forEach((filename) => {
       process.stdout.write('\n'+filename)
         if (shell.exec(
@@ -523,7 +519,6 @@ actions:function(answers){
 }
 }
 )
-
 
 
 }; // Plot function end

@@ -2,7 +2,7 @@
 ssid = "SummerTime"
 passwd = "Calmhat436"
 # address of the network adapter to use
-ip = '10.176.24.128'
+ip = ''
 # securiy keys
 privatekey = "security to be implemented"
 publickey = "security to be implemented"

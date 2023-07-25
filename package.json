@@ -13,9 +13,7 @@
   },
   "scripts": {
     "dev": "python ./internals/core/main.py",
-    "do": "node ./node_modules/plop/src/plop.js",
-    "setproxy": "npm config set proxy http://194.145.60.1:9400 && npm config set https-proxy http://194.145.60.1:9400",
-    "deleteproxy": "npm config delete proxy && npm config delete https-proxy "
+    "do": "plop --plopfile ./plopfile.js"
   },
   "keywords": [
     "Internet",
@@ -28,10 +26,11 @@
     "Intelligence"
   ],
   "devDependencies": {
-    "cross-env": "^5.2.0",
-    "inquirer-recursive": "0.0.5",
-    "plop": "^2.1.0",
-    "serialport": "^7.0.2",
-    "shelljs": "^0.8.2"
+    "@serialport/list": "^11.0.0",
+    "cross-env": "^7.0.3",
+    "inquirer-recursive": "^0.0.7",
+    "plop": "^3.1.2",
+    "serialport": "^11.0.0",
+    "shelljs": "^0.8.5"
   }
 }
